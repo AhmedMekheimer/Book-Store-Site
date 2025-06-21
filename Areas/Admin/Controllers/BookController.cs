@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Online_Book_Store.Areas.Admin.Controllers
 {
@@ -8,7 +9,8 @@ namespace Online_Book_Store.Areas.Admin.Controllers
         private readonly ApplicationDbContext _context = new();
         public IActionResult Index()
         {
-            return View();
+            var books = _context.Books.Include(b => b.Authors).ToList();
+            return View(books);
         }
     }
 }
