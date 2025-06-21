@@ -12,5 +12,19 @@ namespace Online_Book_Store.Areas.Admin.Controllers
             var books = _context.Books.Include(b => b.Authors).ToList();
             return View(books);
         }
+        public IActionResult Create()
+        {
+            return View();
+        }
+        [HttpPost]
+        public IActionResult Create(Book book)
+        {
+            var books = _context.Books;
+            books.Add(book);
+            _context.SaveChanges();
+
+            return RedirectToAction(nameof(Index));
+        }
     }
+
 }
