@@ -27,10 +27,24 @@
 				<textarea id="Bio" name="Bio" class="form-control" rows="4" placeholder="Enter author bio"></textarea>
 			</div>
 
-			<div class="form-group">
-				<label for="SocialMedias">Author's Wikipedia</label>
-				<input type="text" id="Name" name="SocialMedias" class="form-control" placeholder="Enter author name" required>
+			<!-- Social Media Links -->
+			<div class="form-section">
+				<h3>Social Media Links</h3>
+				<div class="form-group">
+					<label>Add social media profiles</label>
+					<div id="socialMediasContainer">
+						<div class="input-group mb-2">
+							<input type="text" name="SocialMedias" class="form-control" placeholder="https://twitter.com/username" required>
+							<button type="button" class="btn btn-remove" disabled>
+							</button>
+						</div>
+					</div>
+					<button type="button" id="addSocialMedia" class="btn btn-add">
+						<i class="fas fa-plus me-2"></i>Add Another Link
+					</button>
+				</div>
 			</div>
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 			<div class="form-actions">
 				<button type="reset" class="btn btn-cancel">
@@ -59,6 +73,53 @@
 @section Scripts {
 	<script>
 		document.addEventListener('DOMContentLoaded', function() {
+						const container = document.getElementById('socialMediasContainer');
+			const addButton = document.getElementById('addSocialMedia');
+
+			// Add new social media field
+			addButton.addEventListener('click', function() {
+				const newGroup = document.createElement('div');
+				newGroup.className = 'input-group mb-2';
+
+				// When creating new input groups:
+				newGroup.innerHTML = `
+					<input type="text" name="SocialMedias" class="form-control" placeholder="https://facebook.com/username" required>
+					<button type="button" class="btn btn-remove">
+						<i class="fas fa-times"></i>
+					</button>
+				`;
+
+				container.appendChild(newGroup);
+
+				// Enable remove button for the first field if we have multiple
+				if (container.children.length > 1) {
+					container.children[0].querySelector('.btn-remove').disabled = false;
+				}
+
+				// Add event to new remove button
+				newGroup.querySelector('.btn-remove').addEventListener('click', function() {
+					container.removeChild(newGroup);
+
+					// If only one field remains, disable its remove button
+					if (container.children.length === 1) {
+						container.children[0].querySelector('.btn-remove').disabled = true;
+					}
+				});
+			});
+
+			// Add event to initial remove button
+			const initialRemoveBtn = container.querySelector('.btn-remove');
+			initialRemoveBtn.addEventListener('click', function() {
+				// Only allow removal if there are multiple fields
+				if (container.children.length > 1) {
+					container.removeChild(container.children[0]);
+
+					// If only one remains, disable its remove button
+					if (container.children.length === 1) {
+						container.children[0].querySelector('.btn-remove').disabled = true;
+					}
+				}
+			});
 			// Live preview for author name
 			const nameInput = document.getElementById('Name');
 			const previewName = document.getElementById('previewName');

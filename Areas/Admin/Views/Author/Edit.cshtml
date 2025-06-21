@@ -1,35 +1,58 @@
-﻿@model Category
-
+﻿@model Author
 <div class="admin-container">
 	<div class="page-header">
-		<h1 class="page-title">Edit @Model.Name Category</h1>
-		<a class="btn btn-back" asp-area="Admin" asp-controller="Category" asp-action="Index">
-			<i class="fas fa-arrow-left me-2"></i>Back to Categories
+		<h1 class="page-title">Edit New Author</h1>
+		<a class="btn btn-back" asp-area="Admin" asp-controller="Author" asp-action="Index">
+			<i class="fas fa-arrow-left me-2"></i>Back to Authors
 		</a>
 	</div>
 
 	<div class="create-form-container">
 		<form asp-action="Edit" method="post">
 			<div class="form-group">
-				<label for="Name">Category Name</label>
-				<input type="text" id="Name" name="Name" class="form-control" placeholder="Enter category name" value="@Model.Name" required>
-				<div class="form-hint">e.g. Fiction, Science, Romance</div>
+				<label for="Name">Author Name</label>
+				<input value="@Model.Name" type="text" id="Name" name="Name" class="form-control" placeholder="Enter author name" required>
 			</div>
 
 			<div class="form-group">
 				<label for="Picture">Image URL</label>
 				<input value="@Model.Picture" type="text" id="Picture" name="Picture" class="form-control" placeholder="https://example.com/image.jpg">
-				<div class="form-hint">Link to category image (optional)</div>
+				<div class="form-hint">Link to author image (optional)</div>
 				<div class="image-preview mt-2" id="imagePreview">
 					<div class="preview-text">Image preview will appear here</div>
 				</div>
 			</div>
 
 			<div class="form-group">
-				<label for="Description">Description</label>
-				<textarea id="Description" name="Description" class="form-control" rows="4" placeholder="Enter category description">@Model.Description</textarea>
-				<div class="form-hint">Describe this category (optional)</div>
+				<label for="Bio">Bio</label>
+				<textarea id="Bio" name="Bio" class="form-control" rows="4" placeholder="Enter author bio">@Model.Bio</textarea>
 			</div>
+
+			<!-- Social Media Links -->
+			<div class="form-section">
+				<h3>Social Media Links</h3>
+				<div class="form-group">
+					<label>Add social media profiles</label>
+					<div id="socialMediasContainer">
+						@for (int i = 0; i < Model.SocialMedias.Count; i++)
+						{
+							<div class="input-group mb-2">
+								<input type="text" name="SocialMedias" class="form-control"
+									   value="@Model.SocialMedias[i]"
+									   placeholder="https://example.com/username" required>
+								<button type="button" class="btn btn-remove"
+								@(Model.SocialMedias.Count == 1 ? "disabled" : "")>
+									<i class="fas fa-times"></i>
+								</button>
+							</div>
+						}
+					</div>
+					<button type="button" id="addSocialMedia" class="btn btn-add">
+						<i class="fas fa-plus me-2"></i>Add Another Link
+					</button>
+				</div>
+			</div>
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 			<div class="form-actions">
 				<button type="reset" class="btn btn-cancel">
@@ -48,57 +71,138 @@
 					<i class="fas fa-book"></i>
 				</div>
 				<div class="preview-details">
-					<h4 id="previewName">Category Name</h4>
-					<p id="previewDescription">Description will appear here</p>
+					<h4 id="previewName">Author Name</h4>
+					<p id="previewBio">Bio will appear here</p>
 				</div>
 			</div>
 		</div>
 	</div>
 </div>
+
 @section Scripts {
-	<script>
-		document.addEventListener('DOMContentLoaded', function() {
-			// Live preview for category name
-			const nameInput = document.getElementById('Name');
-			const previewName = document.getElementById('previewName');
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- Social Media Fields Management ---
+            const container = document.getElementById('socialMediasContainer');
+            const addButton = document.getElementById('addSocialMedia');
 
-			nameInput.addEventListener('input', function() {
-				previewName.textContent = this.value || 'Category Name';
-			});
+            if (container && addButton) {
+                // Function to update remove buttons state
+                function updateRemoveButtons() {
+                    const groups = container.querySelectorAll('.input-group');
+                    groups.forEach(group => {
+                        const removeBtn = group.querySelector('.btn-remove');
+                        removeBtn.disabled = groups.length === 1;
+                    });
+                }
 
-			// Live preview for description
-			const descInput = document.getElementById('Description');
-			const previewDesc = document.getElementById('previewDescription');
+                // Function to remove a field group
+                function removeFieldGroup(group) {
+                    container.removeChild(group);
+                    updateRemoveButtons();
+                }
 
-			descInput.addEventListener('input', function() {
-				previewDesc.textContent = this.value || 'Description will appear here';
-			});
+                // Add new social media field
+                addButton.addEventListener('click', function() {
+                    const newGroup = document.createElement('div');
+                    newGroup.className = 'input-group mb-2';
 
-			// Image URL preview
-			const imageInput = document.getElementById('Picture');
-			const imagePreview = document.getElementById('imagePreview');
+                    newGroup.innerHTML = `
+                        <input type="text" name="SocialMedias" class="form-control" placeholder="https://example.com/username" required>
+                        <button type="button" class="btn btn-remove">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
 
-			imageInput.addEventListener('input', function() {
-				const url = this.value.trim();
+                    container.appendChild(newGroup);
 
-				if (url) {
-					imagePreview.innerHTML = `<img src="${url}" alt="Preview" onerror="this.style.display='none'; document.querySelector('.preview-text').style.display='block'">`;
-					imagePreview.querySelector('.preview-text').style.display = 'none';
-				} else {
-					imagePreview.innerHTML = '<div class="preview-text">Image preview will appear here</div>';
-				}
-			});
+                    // Add event to the new remove button
+                    newGroup.querySelector('.btn-remove').addEventListener('click', function() {
+                        removeFieldGroup(newGroup);
+                    });
 
-			// Form validation
-			const form = document.querySelector('form');
+                    updateRemoveButtons();
+                });
 
-			form.addEventListener('submit', function(e) {
-				if (!nameInput.value.trim()) {
-					e.preventDefault();
-					nameInput.focus();
-					alert('Category name is required');
-				}
-			});
-		});
-	</script>
+                // Add event to existing remove buttons
+                container.querySelectorAll('.btn-remove').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const group = this.closest('.input-group');
+                        removeFieldGroup(group);
+                    });
+                });
+
+                // Initialize button states
+                updateRemoveButtons();
+            }
+
+            // --- Preview Functionality (Only if elements exist) ---
+            const nameInput = document.getElementById('Name');
+            const previewName = document.getElementById('previewName');
+
+            if (nameInput && previewName) {
+                nameInput.addEventListener('input', function() {
+                    previewName.textContent = this.value || 'Author Name';
+                });
+            }
+
+            const descInput = document.getElementById('Bio');
+            const previewDesc = document.getElementById('previewBio');
+
+            if (descInput && previewDesc) {
+                descInput.addEventListener('input', function() {
+                    previewDesc.textContent = this.value || 'Bio will appear here';
+                });
+            }
+
+            const imageInput = document.getElementById('Picture');
+            const imagePreview = document.getElementById('imagePreview');
+
+            if (imageInput && imagePreview) {
+                imageInput.addEventListener('input', function() {
+                    const url = this.value.trim();
+
+                    if (url) {
+                        imagePreview.innerHTML = `<img src="${url}" alt="Preview" onerror="this.style.display='none'">`;
+                        if (imagePreview.querySelector('.preview-text')) {
+                            imagePreview.querySelector('.preview-text').style.display = 'none';
+                        }
+                    } else {
+                        imagePreview.innerHTML = '<div class="preview-text">Image preview will appear here</div>';
+                    }
+                });
+            }
+
+            // Form validation
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    if (!nameInput?.value.trim()) {
+                        e.preventDefault();
+                        nameInput.focus();
+                        alert('Author name is required');
+                        return false;
+                    }
+
+                    // Validate social media links
+                    const socialInputs = container.querySelectorAll('input[name="SocialMedias"]');
+                    let hasValue = false;
+
+                    socialInputs.forEach(input => {
+                        if (input.value.trim()) {
+                            hasValue = true;
+                        }
+                    });
+
+                    if (!hasValue) {
+                        e.preventDefault();
+                        alert('Please add at least one social media link');
+                        return false;
+                    }
+
+                    return true;
+                });
+            }
+        });
+    </script>
 }

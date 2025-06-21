@@ -463,6 +463,61 @@ textarea.form-control {
     margin-bottom: 1rem;
 }
 
+.btn-add {
+    background-color: #4361ee;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+}
+    .btn-add:hover {
+        background-color: #3f37c9;
+    }
+
+.btn-remove {
+    background-color: #e63946;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    min-width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 16px; /* Ensures icon is visible */
+    padding: 0 10px; /* Added padding */
+}
+
+.btn-remove i {
+    margin: 0; /* Remove any margins */
+}
+/* Adjust input group to better handle button */
+.input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center; /* Vertically center items */
+}
+
+    .input-group .form-control {
+        flex-grow: 1;
+        height: 46px; /* Match button height */
+    }
+
+    .btn-remove:hover {
+        background-color: #d32f2f;
+    }
+
+    .btn-remove:disabled {
+        background-color: #e9ecef;
+        color: #adb5bd;
+        cursor: not-allowed;
+    }
+
 .card h2 {
     margin-bottom: 0.5rem;
     color: var(--dark);

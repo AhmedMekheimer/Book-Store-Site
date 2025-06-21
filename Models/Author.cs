@@ -6,7 +6,7 @@
         public string Name { get; set; } = null!;
         public string? Bio { get; set; }
         public string Picture { get; set; } = string.Empty;
-        public List<SocialMedia> SocialMedias { get; set; } = new List<SocialMedia>();
+        public List<string>? SocialMedias { get; set; }
         public List<Book> Books { get; set; } = new List<Book>();
     }
 }
