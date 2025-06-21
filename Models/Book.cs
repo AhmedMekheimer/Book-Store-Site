@@ -8,6 +8,7 @@
         public string Picture { get; set; } = string.Empty;
         public int AvailableCopies { get; set; }
         public int CategoryId { get; set; }
-        public int PublishingHouseId { get; set; }
+        public List<Author> Authors { get; set; } = new List<Author>();
+        public List<PublishingHouse> PublishingHouses { get; set; } = new List<PublishingHouse>();
     }
 }
