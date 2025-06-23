@@ -36,6 +36,11 @@ header {
     align-items: center;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
+    /* Explicitly set <a> color */
+    header a {
+        color: inherit; /* Forces inheritance from parent */
+        text-decoration: none;
+    }
 
 .user-info {
     display: flex;
@@ -551,4 +556,12 @@ footer {
         flex-direction: column;
         gap: 1rem;
     }
+}
+
+/* Remove underlines in all states */
+.no-underline,
+.no-underline:hover,
+.no-underline:active,
+.no-underline:focus {
+    text-decoration: none !important;
 }

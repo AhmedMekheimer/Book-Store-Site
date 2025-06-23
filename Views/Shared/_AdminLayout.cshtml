@@ -1,32 +1,31 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewData["Title"] Bookstore Admin Dashboard</title>
-    <link rel="stylesheet" href="~/Admin/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/Admin/css/style.css">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>@ViewData["Title"] Book Store Admin Dashboard</title>
+	<link rel="stylesheet" href="~/Admin/css/style.css">
+	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 </head>
 <body>
-    <header>
-        <h3><a class="navbar-brand" asp-area="Admin" asp-controller="Home" asp-action="Index">Book Store Admin Dashboard</a></h3>
-        <div class="user-info">
-            <span>Admin</span>
-            <div class="avatar">A</div>
-        </div>
-    </header>
-    <div class="dashboard">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+	<header>
+		<h2><a class="no-underline" asp-area="Admin" asp-controller="Home" asp-action="Index">Book Store Admin Dashboard</a></h2>
+		<div class="user-info">
+			<span>Admin</span>
+			<div class="avatar">A</div>
+		</div>
+	</header>
+	<div class="dashboard">
+		<main role="main" class="pb-3">
+			@RenderBody()
+		</main>
+	</div>
 
-    <footer class="border-top footer text-muted">
-        <p>© 2025 Bookstore Admin Dashboard</p>
-    </footer>
-    <script src="~/Admin/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/Admin/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/Admin/js/script.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+	<footer class="border-top footer text-muted">
+		<p>© 2025 Book Store Admin Dashboard</p>
+	</footer>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+	@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

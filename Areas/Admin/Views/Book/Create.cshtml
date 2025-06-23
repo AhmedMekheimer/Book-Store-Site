@@ -1,26 +1,31 @@
-﻿<div class="admin-container">
+﻿@model CategoriesAuthorsPublishers
+
+<div class="admin-container">
 	<div class="page-header">
 		<h1 class="page-title">Create New Book</h1>
 		<a class="btn btn-back" asp-area="Admin" asp-controller="Book" asp-action="Index">
-			<i class="fas fa-arrow-left me-2"></i>Back to Books
+			Back to Books
 		</a>
 	</div>
 
 	<div class="create-form-container">
 		<form asp-action="Create" method="post">
 			<div class="form-group">
-				<label for="Name">Book Name</label>
+				<label for="Name">Name</label>
 				<input type="text" id="Name" name="Name" class="form-control" placeholder="Enter book name" required>
 			</div>
 
 			<div class="form-group">
-				<label for="Price">Book Price</label>
-				<input type="number" id="Price" name="Price" class="form-control" placeholder="Enter book price" required>
+				<label for="Price">Price</label>
+				<input type="number" id="Price" name="Price" class="form-control" placeholder="Enter book price" min="1"
+					   step="0.01"
+					   required
+					   oninput="validity.valid||(value='');">
 			</div>
 
 			<div class="form-group">
 				<label for="Picture">Image URL</label>
-				<input type="text" id="Picture" name="Picture" class="form-control" placeholder="https://example.com/image.jpg">
+				<input type="text" id="Picture" name="Picture" class="form-control" placeholder="https://example.com/image.jpg" required>
 				<div class="form-hint">Link to book image (optional)</div>
 				<div class="image-preview mt-2" id="imagePreview">
 					<div class="preview-text">Image preview will appear here</div>
@@ -28,10 +33,48 @@
 			</div>
 
 			<div class="form-group">
-				<label for="AvailableCopies">Book's No. Available Copies</label>
-				<input type="number" id="AvailableCopies" name="AvailableCopies" class="form-control" placeholder="Enter No. Available Copies" required>
+				<label for="AvailableCopies">No. Available Copies</label>
+				<input type="number" id="AvailableCopies" name="AvailableCopies" class="form-control" placeholder="Enter No. Available Copies" min="0" required oninput="validity.valid||(value='');">
 			</div>
 
+			<div class="form-group">
+				<label for="CategoryId">Category</label>
+				<select name="categoryId" class="form-control" required>
+					@foreach (var cat in Model.Categories)
+					{
+						<option value="@cat.Id">@cat.Name</option>
+					}
+				</select>
+			</div>
+
+			<div class="form-group">
+				<label for="AuthorsIds">Select Authors:</label>
+				<select name="AuthorsIds" id="AuthorsIds" multiple class="multi-select" style="width:100%" required>
+					@foreach (var auth in Model.Authors)
+					{
+						<option value="@auth.Id">@auth.Name</option>
+					}
+				</select>
+			</div>
+
+			<div class="form-group">
+				<label for="PublishersIds">Select Publishing Houses:</label>
+				<select name="PublishersIds" id="PublishersIds" multiple class="multi-select" style="width:100%" required>
+					@foreach (var pubs in Model.PublishingHouses)
+					{
+						<option value="@pubs.Id">@pubs.Name</option>
+					}
+				</select>
+			</div>
+
+			<div class="form-actions">
+				<button type="reset" class="btn btn-cancel">
+					Reset
+				</button>
+				<button type="submit" class="btn btn-create">
+					Create Book
+				</button>
+			</div>
 		</form>
 
 		<div class="form-preview">
@@ -50,49 +93,68 @@
 </div>
 @section Scripts {
 	<script>
+		$(document).ready(function() {
+			$('.multi-select').select2();
+		});
+		// DOMContentLoaded handler
 		document.addEventListener('DOMContentLoaded', function() {
-
-			// Live preview for book name
-			// const nameInput = document.getElementById('Name');
-			// const previewName = document.getElementById('previewName');
-
-			// nameInput.addEventListener('input', function() {
-			// 	previewName.textContent = this.value || 'Book Name';
-			// });
-
-			// Live preview for bio
-			// const descInput = document.getElementById('Bio');
-			// const previewDesc = document.getElementById('previewBio');
-
-			// descInput.addEventListener('input', function() {
-			// 	previewDesc.textContent = this.value || 'Bio will appear here';
-			// });
-
-			// Image URL preview
-			// const imageInput = document.getElementById('Picture');
-			// const imagePreview = document.getElementById('imagePreview');
-
-			// imageInput.addEventListener('input', function() {
-			// 	const url = this.value.trim();
-
-			// 	if (url) {
-			// 		imagePreview.innerHTML = `<img src="${url}" alt="Preview" onerror="this.style.display='none'; document.querySelector('.preview-text').style.display='block'">`;
-			// 		imagePreview.querySelector('.preview-text').style.display = 'none';
-			// 	} else {
-			// 		imagePreview.innerHTML = '<div class="preview-text">Image preview will appear here</div>';
-			// 	}
-			// });
-
-			// Form validation
+			// Fix: Use existing elements only
+			const nameInput = document.getElementById('Name');
+			const previewName = document.getElementById('previewName');
+			const imageInput = document.getElementById('Picture');
+			const imagePreview = document.getElementById('imagePreview');
 			const form = document.querySelector('form');
-
-			form.addEventListener('submit', function(e) {
-				if (!nameInput.value.trim()) {
-					e.preventDefault();
-					nameInput.focus();
-					alert('Book name is required');
+			if (nameInput && previewName) {
+				nameInput.addEventListener('input', function() {
+					previewName.textContent = this.value || 'Book Name';
+				});
+			}
+			if (imageInput && imagePreview) {
+				imageInput.addEventListener('input', function() {
+					const url = this.value.trim();
+					const previewText = imagePreview.querySelector('.preview-text');
+					if (url) {
+						imagePreview.innerHTML = `<img src="${url}" alt="Preview"
+								style="max-width: 100%; max-height: 200px;"
+								onerror="this.style.display='none';
+								document.querySelector('.preview-text').style.display='block'">`;
+						if (previewText) previewText.style.display = 'none';
+					} else {
+						imagePreview.innerHTML = '<div class="preview-text">Image preview will appear here</div>';
+					}
+				});
+			}
+			if (form && nameInput) {
+				form.addEventListener('submit', function(e) {
+					if (!nameInput.value.trim()) {
+						e.preventDefault();
+						nameInput.focus();
+						alert('Book name is required');
+					}
+				});
+			}
+			// Function to validate positive numbers
+			const setupPositiveNumberValidation = (elementId) => {
+				const input = document.getElementById(elementId);
+				if (input) {
+					// Validate on change
+					input.addEventListener('change', function() {
+						if (parseFloat(this.value) < 0) {
+							this.value = '';
+							alert('Please enter a positive number');
+						}
+					});
+					// Prevent typing negative values
+					input.addEventListener('keydown', function(e) {
+						if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+							e.preventDefault();
+						}
+					});
 				}
-			});
+			};
+			// Set up validation for both fields
+			setupPositiveNumberValidation('Price');
+			setupPositiveNumberValidation('AvailableCopies');
 		});
 	</script>
 }
