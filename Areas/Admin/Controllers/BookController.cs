@@ -18,13 +18,13 @@ namespace Online_Book_Store.Areas.Admin.Controllers
             var categories = _context.Categories.ToList();
             var authors = _context.Authors.ToList();
             var pubs = _context.PublishingHouses.ToList();
-            CategoriesAuthorsPublishers categoriesAuthorsPublishers = new()
+            BooksCatAuthPubsVM BooksCatAuthPubsVM = new()
             {
                 Categories = categories,
                 Authors = authors,
                 PublishingHouses = pubs
             };
-            return View(categoriesAuthorsPublishers);
+            return View(BooksCatAuthPubsVM);
         }
         [HttpPost]
         public IActionResult Create(BookDataVM bookDataVM)
@@ -60,7 +60,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
             var categories = _context.Categories.ToList();
             var authors = _context.Authors.ToList();
             var pubs = _context.PublishingHouses.ToList();
-            CategoriesAuthorsPublishers categoriesAuthorsPublishers = new()
+            BooksCatAuthPubsVM BooksCatAuthPubsVM = new()
             {
                 Categories = categories,
                 Authors = authors,
@@ -77,7 +77,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 EditBookVM editBookVM = new()
                 {
                     book = book,
-                    categoriesAuthorsPublishers = categoriesAuthorsPublishers
+                    BooksCatAuthPubsVM = BooksCatAuthPubsVM
                 };
                 return View(editBookVM);
             }
@@ -89,7 +89,6 @@ namespace Online_Book_Store.Areas.Admin.Controllers
             var pubs = _context.PublishingHouses;
             Book book = new()
             {
-                Id=bookDataVM.Id,
                 Name = bookDataVM.Name,
                 Price = bookDataVM.Price,
                 Picture = bookDataVM.Picture,
@@ -105,7 +104,10 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 book.PublishingHouses.Add(pubs.Find(pubId));
             }
             var books = _context.Books;
-            books.Update(book);
+            Book oldBook = books.Find(bookDataVM.Id);
+            books.Remove(oldBook);
+            _context.SaveChanges();
+            books.Add(book);
             _context.SaveChanges();
 
             return RedirectToAction(nameof(Index));
