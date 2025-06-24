@@ -1,0 +1,55 @@
+﻿@model IQueryable<Book>
+
+<div class="container">
+
+	<!-- Books Section -->
+	<section class="Books">
+		<div class="section-header">
+			<h2 class="icon">Featured Books 📚</h2>
+
+			<!-- Search Bar -->
+			<div class="search-container">
+				<form action="Index">
+					@if (ViewData["Search"] is not null)
+					{
+						<input value="@ViewData["Search"]" type="text" placeholder="Search books..." name="search" class="search-input">
+					}
+					else
+					{
+						<input type="text" placeholder="Search books..." name="search" class="search-input">
+					}
+					<button type="submit" class="search-button">
+						<i class="fas fa-search"></i>
+					</button>
+				</form>
+			</div>
+		</div>
+		<div class="books-grid">
+			@foreach (var book in Model)
+			{
+				<div class="book-card">
+					<div class="book-cover"></div>
+					<div class="book-details">
+						<h3>@book.Name</h3>
+						@foreach (var auth in book.Authors)
+						{
+							<p class="author"><i class="fas fa-user-pen"></i> @auth.Name</p>
+						}
+						<div class="price-row">
+							<span class="price">@book.Price</span>
+							@if (book.AvailableCopies == 0)
+							{
+								<span class="availability unavailable"><i class="fas fa-times-circle"></i> Out of Stock</span>
+							}
+							else
+							{
+								<span class="availability available"><i class="fas fa-check-circle"></i> In Stock</span>
+							}
+						</div>
+					</div>
+				</div>
+			}
+		</div>
+	</section>
+</div>
+
