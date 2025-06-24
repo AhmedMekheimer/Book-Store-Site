@@ -3,6 +3,6 @@
     public class EditBookVM
     {
         public Book book { get; set; } = new Book();
-        public CategoriesAuthorsPublishers categoriesAuthorsPublishers { get; set; } = new CategoriesAuthorsPublishers();
+        public BooksCatAuthPubsVM BooksCatAuthPubsVM { get; set; } = new BooksCatAuthPubsVM();
     }
 }
