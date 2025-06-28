@@ -1,4 +1,4 @@
-﻿@model EditBookVM
+﻿@model BookCatAuthPubsVM
 
 <div class="admin-container">
 	<div class="page-header">
@@ -11,42 +11,33 @@
 	<div class="create-form-container">
 		<form asp-action="Edit" method="post">
 			<div class="form-group">
-				<input type="hidden" name="id" value="@Model.book.Id" />
+				<input type="hidden" name="id" value="@Model.Book.Id" />
 			</div>
 
 			<div class="form-group">
 				<label for="Name">Name</label>
-				<input value="@Model.book.Name" type="text" id="Name" name="Name" class="form-control" placeholder="Enter book name" required>
+				<input value="@Model.Book.Name" type="text" id="Name" name="Name" class="form-control" placeholder="Enter book name" required>
 			</div>
 
 			<div class="form-group">
 				<label for="Price">Price</label>
-				<input value="@Model.book.Price" type="number" id="Price" name="Price" class="form-control" placeholder="Enter book price" min="1"
+				<input value="@Model.Book.Price" type="number" id="Price" name="Price" class="form-control" placeholder="Enter book price" min="1"
 					   step="0.01"
 					   required
 					   oninput="validity.valid||(value='');">
 			</div>
 
 			<div class="form-group">
-				<label for="Picture">Image URL</label>
-				<input value="@Model.book.Picture" type="text" id="Picture" name="Picture" class="form-control" placeholder="https://example.com/image.jpg" required>
-				<div class="form-hint">Link to book image (optional)</div>
-				<div class="image-preview mt-2" id="imagePreview">
-					<div class="preview-text">Image preview will appear here</div>
-				</div>
-			</div>
-
-			<div class="form-group">
 				<label for="AvailableCopies">No. Available Copies</label>
-				<input value="@Model.book.AvailableCopies" type="number" id="AvailableCopies" name="AvailableCopies" class="form-control" placeholder="Enter No. Available Copies" min="0" required oninput="validity.valid||(value='');">
+				<input value="@Model.Book.AvailableCopies" type="number" id="AvailableCopies" name="AvailableCopies" class="form-control" placeholder="Enter No. Available Copies" min="0" required oninput="validity.valid||(value='');">
 			</div>
 
 			<div class="form-group">
 				<label for="CategoryId">Category</label>
 				<select name="categoryId" class="form-control" required>
-					@foreach (var cat in Model.BooksCatAuthPubsVM.Categories)
+					@foreach (var cat in Model.Categories)
 					{
-						if (Model.book.CategoryId == cat.Id)
+						if (Model.Book.CategoryId == cat.Id)
 						{
 							<option value="@cat.Id" selected>@cat.Name</option>
 						}
@@ -61,13 +52,13 @@
 			<div class="form-group">
 				<label for="AuthorsIds">Select Authors:</label>
 				<select name="AuthorsIds" id="AuthorsIds" multiple class="multi-select" style="width:100%" required>
-					@foreach (var bookauth in Model.book.Authors)
+					@foreach (var bookauth in Model.Book.Authors)
 					{
 						<option value="@bookauth.Id" selected>@bookauth.Name</option>
 					}
-					@foreach (var auth in Model.BooksCatAuthPubsVM.Authors)
+					@foreach (var auth in Model.Authors)
 					{
-						foreach (var bookauth in Model.book.Authors)
+						foreach (var bookauth in Model.Book.Authors)
 						{
 							if (bookauth.Id != auth.Id)
 							{
@@ -82,13 +73,13 @@
 			<div class="form-group">
 				<label for="PublishersIds">Select Publishing Houses:</label>
 				<select name="PublishersIds" id="PublishersIds" multiple class="multi-select" style="width:100%" required>
-					@foreach (var bookpub in Model.book.PublishingHouses)
+					@foreach (var bookpub in Model.Book.PublishingHouses)
 					{
 						<option value="@bookpub.Id" selected>@bookpub.Name</option>
 					}
-					@foreach (var pub in Model.BooksCatAuthPubsVM.PublishingHouses)
+					@foreach (var pub in Model.PublishingHouses)
 					{
-						foreach (var bookpub in Model.book.PublishingHouses)
+						foreach (var bookpub in Model.Book.PublishingHouses)
 						{
 							if (bookpub.Id != pub.Id)
 							{

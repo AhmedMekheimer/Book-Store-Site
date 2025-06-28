@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Online_Book_Store.Models;
 using Online_Book_Store.ViewModels;
 
 namespace Online_Book_Store.Areas.Admin.Controllers
@@ -18,16 +19,17 @@ namespace Online_Book_Store.Areas.Admin.Controllers
             var categories = _context.Categories.ToList();
             var authors = _context.Authors.ToList();
             var pubs = _context.PublishingHouses.ToList();
-            BooksCatAuthPubsVM BooksCatAuthPubsVM = new()
+            BookCatAuthPubsVM BookCatAuthPubsVM = new()
             {
                 Categories = categories,
                 Authors = authors,
-                PublishingHouses = pubs
+                PublishingHouses = pubs,
+                Book = new Book()
             };
-            return View(BooksCatAuthPubsVM);
+            return View(BookCatAuthPubsVM);
         }
         [HttpPost]
-        public IActionResult Create(BookDataVM bookDataVM)
+        public IActionResult Create(BookDataVM bookDataVM, List<IFormFile> files)
         {
             var authors = _context.Authors;
             var pubs = _context.PublishingHouses;
@@ -35,10 +37,52 @@ namespace Online_Book_Store.Areas.Admin.Controllers
             {
                 Name = bookDataVM.Name,
                 Price = bookDataVM.Price,
-                Picture = bookDataVM.Picture,
                 AvailableCopies = bookDataVM.AvailableCopies,
                 CategoryId = bookDataVM.CategoryId,
+                Files=new List<UploadedFile>()
             };
+
+            var filesInDb=_context.UploadedFiles;
+            // Common image extensions
+            var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
+            // Common video extensions
+            var videoExtensions = new[] { ".mp4", ".mov", ".avi", ".mkv", ".webm", ".wmv" };
+
+            foreach (var file in files)
+            {
+                if(file is not null && file.Length>0)
+                {
+                    // Save File in wwwroot
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\Files", fileName);
+                    var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+                    using (var stream = System.IO.File.Create(filePath))
+                    {
+                        file.CopyTo(stream);
+                    }
+
+                    // Save File in Files Table
+                    UploadedFile uploadedFile = new()
+                    {
+                        Name = fileName,
+                    };
+                    if (imageExtensions.Contains(extension))
+                    {
+                        uploadedFile.FileType = FileType.Image;
+                    }
+                    else if (videoExtensions.Contains(extension))
+                    {
+                        uploadedFile.FileType = FileType.Video;
+                    }
+                    filesInDb.Add(uploadedFile);
+                    _context.SaveChanges();
+
+                    //Save File to Book Table
+                    book.Files.Add(uploadedFile);
+                }
+            }
+
             foreach (var authId in bookDataVM.AuthorsIds)
             {
                 book.Authors.Add(authors.Find(authId));
@@ -60,11 +104,12 @@ namespace Online_Book_Store.Areas.Admin.Controllers
             var categories = _context.Categories.ToList();
             var authors = _context.Authors.ToList();
             var pubs = _context.PublishingHouses.ToList();
-            BooksCatAuthPubsVM BooksCatAuthPubsVM = new()
+            BookCatAuthPubsVM BookCatAuthPubsVM = new()
             {
                 Categories = categories,
                 Authors = authors,
-                PublishingHouses = pubs
+                PublishingHouses = pubs,
+                Book = new Book()
             };
 
             Book? book = books.Include(b=>b.Authors).Include(b=>b.PublishingHouses).SingleOrDefault(e => e.Id == id);
@@ -74,12 +119,8 @@ namespace Online_Book_Store.Areas.Admin.Controllers
             }
             else
             {
-                EditBookVM editBookVM = new()
-                {
-                    book = book,
-                    BooksCatAuthPubsVM = BooksCatAuthPubsVM
-                };
-                return View(editBookVM);
+                BookCatAuthPubsVM.Book = book;
+                return View(BookCatAuthPubsVM);
             }
         }
         [HttpPost]
@@ -91,7 +132,6 @@ namespace Online_Book_Store.Areas.Admin.Controllers
             {
                 Name = bookDataVM.Name,
                 Price = bookDataVM.Price,
-                Picture = bookDataVM.Picture,
                 AvailableCopies = bookDataVM.AvailableCopies,
                 CategoryId = bookDataVM.CategoryId,
             };

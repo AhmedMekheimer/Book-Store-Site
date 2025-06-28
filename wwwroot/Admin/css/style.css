@@ -565,3 +565,58 @@ footer {
 .no-underline:focus {
     text-decoration: none !important;
 }
+
+
+#imagePreviews {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.img-thumbnail {
+    object-fit: cover;
+    height: 200px;
+    width: auto;
+}
+
+.position-relative {
+    position: relative;
+}
+
+.position-absolute {
+    position: absolute;
+}
+
+.top-0 {
+    top: 0;
+}
+
+.end-0 {
+    right: 0;
+}
+
+.video-preview-container {
+    position: relative;
+    margin-bottom: 15px;
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+video {
+    background: #000;
+}
+
+.video-info {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+#videoPreviews {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}

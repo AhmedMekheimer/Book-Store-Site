@@ -4580,7 +4580,7 @@ function showHide( elements, show ) {
 		display = elem.style.display;
 		if ( show ) {
 
-			// Since we force visibility upon cascade-hidden elements, an immediate (and slow)
+			// Since we force visibility upon Cascade-hidden elements, an immediate (and slow)
 			// check is required in this first loop unless we have a nonempty display value (either
 			// inline or about-to-be-restored)
 			if ( display === "none" ) {
@@ -7282,7 +7282,7 @@ function defaultPrefilter( elem, props, opts ) {
 		// the overflowX value there.
 		opts.overflow = [ style.overflow, style.overflowX, style.overflowY ];
 
-		// Identify a display type, preferring old show/hide data over the CSS cascade
+		// Identify a display type, preferring old show/hide data over the CSS Cascade
 		restoreDisplay = dataShow && dataShow.display;
 		if ( restoreDisplay == null ) {
 			restoreDisplay = dataPriv.get( elem, "display" );

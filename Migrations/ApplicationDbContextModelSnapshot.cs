@@ -66,10 +66,6 @@ namespace Online_Book_Store.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Picture")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.PrimitiveCollection<string>("SocialMedias")
                         .HasColumnType("nvarchar(max)");
 
@@ -93,10 +89,6 @@ namespace Online_Book_Store.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Picture")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -125,10 +117,6 @@ namespace Online_Book_Store.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Picture")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
@@ -152,6 +140,46 @@ namespace Online_Book_Store.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("PublishingHouses");
+                });
+
+            modelBuilder.Entity("Online_Book_Store.Models.UploadedFile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AuthorId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("BookId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FileType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("PublishingHouseId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("BookId");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("PublishingHouseId");
+
+                    b.ToTable("UploadedFiles");
                 });
 
             modelBuilder.Entity("AuthorBook", b =>
@@ -193,9 +221,57 @@ namespace Online_Book_Store.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Online_Book_Store.Models.UploadedFile", b =>
+                {
+                    b.HasOne("Online_Book_Store.Models.Author", "Author")
+                        .WithMany("Files")
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Online_Book_Store.Models.Book", "Book")
+                        .WithMany("Files")
+                        .HasForeignKey("BookId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Online_Book_Store.Models.Category", "Category")
+                        .WithMany("Files")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Online_Book_Store.Models.PublishingHouse", "PublishingHouse")
+                        .WithMany("Files")
+                        .HasForeignKey("PublishingHouseId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Author");
+
+                    b.Navigation("Book");
+
+                    b.Navigation("Category");
+
+                    b.Navigation("PublishingHouse");
+                });
+
+            modelBuilder.Entity("Online_Book_Store.Models.Author", b =>
+                {
+                    b.Navigation("Files");
+                });
+
+            modelBuilder.Entity("Online_Book_Store.Models.Book", b =>
+                {
+                    b.Navigation("Files");
+                });
+
             modelBuilder.Entity("Online_Book_Store.Models.Category", b =>
                 {
                     b.Navigation("Books");
+
+                    b.Navigation("Files");
+                });
+
+            modelBuilder.Entity("Online_Book_Store.Models.PublishingHouse", b =>
+                {
+                    b.Navigation("Files");
                 });
 #pragma warning restore 612, 618
         }

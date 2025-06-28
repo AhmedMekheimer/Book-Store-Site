@@ -10,5 +10,6 @@
         public int CategoryId { get; set; }
         public List<int> AuthorsIds { get; set; } = new List<int>();
         public List<int> PublishersIds { get; set; } = new List<int>();
+        public ICollection<UploadedFile> Files { get; set; } = new List<UploadedFile>();
     }
 }

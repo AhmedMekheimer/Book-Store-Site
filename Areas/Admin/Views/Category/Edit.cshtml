@@ -11,18 +11,13 @@
 	<div class="create-form-container">
 		<form asp-action="Edit" method="post">
 			<div class="form-group">
-				<label for="Name">Category Name</label>
-				<input type="text" id="Name" name="Name" class="form-control" placeholder="Enter category name" value="@Model.Name" required>
-				<div class="form-hint">e.g. Fiction, Science, Romance</div>
+				<input type="hidden" name="id" value="@Model.Id" />
 			</div>
 
 			<div class="form-group">
-				<label for="Picture">Image URL</label>
-				<input value="@Model.Picture" type="text" id="Picture" name="Picture" class="form-control" placeholder="https://example.com/image.jpg">
-				<div class="form-hint">Link to category image (optional)</div>
-				<div class="image-preview mt-2" id="imagePreview">
-					<div class="preview-text">Image preview will appear here</div>
-				</div>
+				<label for="Name">Category Name</label>
+				<input type="text" id="Name" name="Name" class="form-control" placeholder="Enter category name" value="@Model.Name" required>
+				<div class="form-hint">e.g. Fiction, Science, Romance</div>
 			</div>
 
 			<div class="form-group">
