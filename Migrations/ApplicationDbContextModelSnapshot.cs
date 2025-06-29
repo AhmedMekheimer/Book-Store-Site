@@ -226,22 +226,22 @@ namespace Online_Book_Store.Migrations
                     b.HasOne("Online_Book_Store.Models.Author", "Author")
                         .WithMany("Files")
                         .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Online_Book_Store.Models.Book", "Book")
                         .WithMany("Files")
                         .HasForeignKey("BookId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Online_Book_Store.Models.Category", "Category")
                         .WithMany("Files")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Online_Book_Store.Models.PublishingHouse", "PublishingHouse")
                         .WithMany("Files")
                         .HasForeignKey("PublishingHouseId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Author");
 

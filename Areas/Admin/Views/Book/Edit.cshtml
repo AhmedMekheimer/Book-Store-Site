@@ -9,7 +9,7 @@
 	</div>
 
 	<div class="create-form-container">
-		<form asp-action="Edit" method="post">
+		<form asp-action="Edit" method="post" enctype="multipart/form-data">
 			<div class="form-group">
 				<input type="hidden" name="id" value="@Model.Book.Id" />
 			</div>
@@ -25,6 +25,60 @@
 					   step="0.01"
 					   required
 					   oninput="validity.valid||(value='');">
+			</div>
+
+			<!-- Existing Images -->
+			<div class="existing-images mb-3">
+				<label>Existing Images</label>
+				<div class="d-flex flex-wrap gap-2" id="existingImagesContainer">
+					@foreach (var file in Model.Book.Files.Where(f => f.FileType == FileType.Image))
+					{
+						<div class="position-relative" id="existingImage_@file.Id">
+							<img src="~/Files/@file.Name" alt="@file.Name" class="img-thumbnail" style="max-height: 150px;">
+							<button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0"
+									onclick="toggleFileDeletion(@file.Id, this)">
+								&times;
+							</button>
+							<!-- Hidden input for existing file ID -->
+							<input type="hidden" name="ExistingFilesIds" value="@file.Id" id="fileInput_@file.Id">
+						</div>
+					}
+				</div>
+			</div>
+
+			<!-- New Images -->
+			<div class="form-group">
+				<label>Upload New Images</label>
+				<input type="file" class="form-control" accept="image/*" id="files" name="files" multiple onchange="previewImages(event)" required>
+				<div id="imagePreviews" class="d-flex flex-wrap gap-2 mt-2"></div>
+			</div>
+
+			<!-- Existing Videos -->
+			<div class="existing-videos mb-3">
+				<label>Existing Videos</label>
+				<div class="d-flex flex-wrap gap-2" id="existingVideosContainer">
+					@foreach (var file in Model.Book.Files.Where(f => f.FileType == FileType.Video))
+					{
+						<div class="position-relative" id="existingVideo_@file.Id">
+							<video width="200" height="150" controls class="img-thumbnail">
+								<source src="~/Files/@file.Name" type="video/mp4">
+								Your browser does not support the video tag.
+							</video>
+							<button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0"
+									onclick="toggleFileDeletion(@file.Id, this)">
+								&times;
+							</button>
+							<!-- Hidden input for existing file ID -->
+							<input type="hidden" name="ExistingFilesIds" value="@file.Id" id="fileInput_@file.Id">
+						</div>
+					}
+				</div>
+			</div>
+
+			<!--New Videos-->
+			<div class="form-group">
+				<label>Upload New Videos</label>
+				<input type="file" class="form-control" accept="video/*" id="files" name="files" multiple required>
 			</div>
 
 			<div class="form-group">
@@ -115,6 +169,105 @@
 </div>
 @section Scripts {
 	<script>
+		// Single toggle function for both Existing images and videos
+		function toggleFileDeletion(fileId, button) {
+			const container = button.closest('.position-relative');
+			const hiddenInput = container.querySelector('input[name="ExistingFilesIds"]');
+
+			if (!hiddenInput) {
+				// If input doesn't exist (shouldn't happen), create it
+				const newInput = document.createElement('input');
+				newInput.type = 'hidden';
+				newInput.name = 'ExistingFilesIds';
+				newInput.value = fileId;
+				newInput.id = `fileInput_${fileId}`;
+				container.appendChild(newInput);
+				return;
+			}
+
+			if (hiddenInput.disabled) {
+				// Undo deletion - re-enable the input
+				hiddenInput.disabled = false;
+				button.innerHTML = '&times;';
+				button.classList.remove('btn-secondary');
+				button.classList.add('btn-danger');
+				container.style.opacity = '1';
+			} else {
+				// Mark for deletion - disable the input
+				hiddenInput.disabled = true;
+				button.innerHTML = 'Undo';
+				button.classList.remove('btn-danger');
+				button.classList.add('btn-secondary');
+				container.style.opacity = '0.5';
+			}
+		}
+
+		//Preview Multiple Images
+		function previewImages(event)
+		{
+			const input = event.target;
+			const previewContainer = document.getElementById('imagePreviews');
+
+			// Clear previous previews
+			previewContainer.innerHTML = '';
+
+			if (input.files && input.files.length > 0) {
+				// Array to store files for later upload
+				window.imageFiles = Array.from(input.files);
+
+				// Create preview for each file
+				Array.from(input.files).forEach((file, index) => {
+					if (!file.type.match('image.*')) {
+						return; // Skip non-image files
+					}
+
+					const reader = new FileReader();
+					const previewDiv = document.createElement('div');
+					previewDiv.className = 'position-relative d-inline-block';
+
+					reader.onload = function(e) {
+						const img = document.createElement('img');
+						img.src = e.target.result;
+						img.className = 'img-thumbnail';
+						img.style.maxHeight = '200px';
+						img.style.marginRight = '10px';
+						img.style.marginBottom = '10px';
+
+						// Add remove button
+						const removeBtn = document.createElement('button');
+						removeBtn.innerHTML = '&times;';
+						removeBtn.className = 'btn btn-danger btn-sm position-absolute top-0 end-0';
+						removeBtn.style.transform = 'translate(50%, -50%)';
+						removeBtn.onclick = () => removeImage(index);
+
+						previewDiv.appendChild(img);
+						previewDiv.appendChild(removeBtn);
+						previewContainer.appendChild(previewDiv);
+					};
+
+					reader.readAsDataURL(file);
+				});
+			}
+		}
+
+		//Image Removal Function
+				function removeImage(index)
+		{
+			// Remove from preview
+			const previews = document.getElementById('imagePreviews');
+			previews.removeChild(previews.children[index]);
+
+			// Remove from files array
+			window.imageFiles.splice(index, 1);
+
+			// Update the CORRECT file input
+			const dataTransfer = new DataTransfer();
+			window.imageFiles.forEach(file => dataTransfer.items.add(file));
+
+			// Target the image input specifically
+			document.getElementById('imgFiles').files = dataTransfer.files;
+		}
+
 		$(document).ready(function() {
 			$('.multi-select').select2();
 		});

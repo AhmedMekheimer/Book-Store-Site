@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http.Features;
+
 namespace Online_Book_Store
 {
     public class Program
@@ -9,7 +11,25 @@ namespace Online_Book_Store
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
+            // Configure request size limits
+            builder.Services.Configure<IISServerOptions>(options =>
+            {
+                options.MaxRequestBodySize = int.MaxValue;
+            });
+
+            builder.Services.Configure<FormOptions>(options =>
+            {
+                options.MultipartBodyLengthLimit = long.MaxValue;
+            });
+
             var app = builder.Build();
+
+            // Add this middleware
+            app.Use(async (context, next) =>
+            {
+                context.Features.Get<IHttpMaxRequestBodySizeFeature>()!.MaxRequestBodySize = null;
+                await next.Invoke();
+            });
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())

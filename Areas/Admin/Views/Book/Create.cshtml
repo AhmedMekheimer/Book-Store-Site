@@ -23,12 +23,14 @@
 					   oninput="validity.valid||(value='');">
 			</div>
 
+			<!--Images-->
 			<div class="form-group">
-				<label>Upload Image</label>
+				<label>Upload Images</label>
 				<input type="file" class="form-control" accept="image/*" id="files" name="files" multiple onchange="previewImages(event)" required>
 				<div id="imagePreviews" class="d-flex flex-wrap gap-2 mt-2"></div>
 			</div>
 
+			<!--Videos-->
 			<div class="form-group">
 				<label>Upload Videos</label>
 				<input type="file" class="form-control" accept="video/*" id="files" name="files" multiple required>
@@ -142,7 +144,9 @@
 				});
 			}
 		}
-		function removeImage(index) 
+
+		//Image Removal Function
+				function removeImage(index)
 		{
 			// Remove from preview
 			const previews = document.getElementById('imagePreviews');
@@ -151,10 +155,12 @@
 			// Remove from files array
 			window.imageFiles.splice(index, 1);
 
-			// Update file input (optional)
+			// Update the CORRECT file input
 			const dataTransfer = new DataTransfer();
 			window.imageFiles.forEach(file => dataTransfer.items.add(file));
-			document.getElementById('files').files = dataTransfer.files;
+
+			// Target the image input specifically
+			document.getElementById('imgFiles').files = dataTransfer.files;
 		}
 
 		//Selecting Multiple Authors & Publishers

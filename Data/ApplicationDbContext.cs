@@ -22,25 +22,25 @@ namespace Online_Book_Store.Data
                 .HasOne(f => f.Author)
                 .WithMany(a => a.Files)
                 .HasForeignKey(f => f.AuthorId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<UploadedFile>()
                 .HasOne(f => f.Book)
                 .WithMany(b => b.Files)
                 .HasForeignKey(f => f.BookId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<UploadedFile>()
                 .HasOne(f => f.PublishingHouse)
                 .WithMany(p => p.Files)
                 .HasForeignKey(f => f.PublishingHouseId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<UploadedFile>()
                 .HasOne(f => f.Category)
                 .WithMany(c => c.Files)
                 .HasForeignKey(f => f.CategoryId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Cascade);
 
         }
     }
