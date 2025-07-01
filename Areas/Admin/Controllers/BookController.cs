@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Online_Book_Store.Models;
 using Online_Book_Store.ViewModels;
@@ -40,10 +41,9 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 Price = bookDataVM.Price,
                 AvailableCopies = bookDataVM.AvailableCopies,
                 CategoryId = bookDataVM.CategoryId,
-                Files = new List<UploadedFile>()
+                Files = new List<BookFile>()
             };
 
-            var filesInDb = _context.UploadedFiles;
             // Common image extensions
             var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
             // Common video extensions
@@ -64,23 +64,23 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                     }
 
                     // Save File in Files Table
-                    UploadedFile uploadedFile = new()
+                    BookFile bookFile = new()
                     {
                         Name = fileName,
                     };
                     if (imageExtensions.Contains(extension))
                     {
-                        uploadedFile.FileType = FileType.Image;
+                        bookFile.FileType = FileType.Image;
                     }
                     else if (videoExtensions.Contains(extension))
                     {
-                        uploadedFile.FileType = FileType.Video;
+                        bookFile.FileType = FileType.Video;
                     }
-                    filesInDb.Add(uploadedFile);
+                    _context.BookFiles.Add(bookFile);
                     _context.SaveChanges();
 
                     //Save File to Book Table
-                    book.Files.Add(uploadedFile);
+                    book.Files.Add(bookFile);
                 }
             }
 
@@ -92,8 +92,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
             {
                 book.PublishingHouses.Add(pubs.Find(pubId));
             }
-            var books = _context.Books;
-            books.Add(book);
+            _context.Books.Add(book);
             _context.SaveChanges();
 
             return RedirectToAction(nameof(Index));
@@ -102,68 +101,47 @@ namespace Online_Book_Store.Areas.Admin.Controllers
         public IActionResult Edit(int id)
         {
             var books = _context.Books;
-            var categories = _context.Categories.ToList();
-            var authors = _context.Authors.ToList();
-            var pubs = _context.PublishingHouses.ToList();
-            var files = _context.UploadedFiles.Where(u => u.BookId == id).ToList();
-
-            //Testing Removing a File from Db
-            using (var transaction = _context.Database.BeginTransaction())
-            {
-                try
-                {
-                    var deleteFile = _context.UploadedFiles.SingleOrDefault(u => u.Id == 1020);
-                    var book1 = _context.Books.Find(1034);
-                    book1.Files.Remove(deleteFile);
-                    _context.Entry(deleteFile).State = EntityState.Deleted;
-                }
-                catch (Exception ex)
-                {
-                    transaction.Rollback();
-                    Console.WriteLine(ex.Message);
-                    // Handle error
-                }
-            }
-
-            BookCatAuthPubsVM BookCatAuthPubsVM = new()
-            {
-                Categories = categories,
-                Authors = authors,
-                PublishingHouses = pubs,
-                Book = new Book()
-            };
-
-            Book? book = books.Include(b => b.Authors).Include(b => b.PublishingHouses).SingleOrDefault(e => e.Id == id);
+            Book? book = books.Include(b => b.Authors).Include(b => b.PublishingHouses).Include(b => b.Files).SingleOrDefault(e => e.Id == id);
             if (book is null)
             {
                 return NotFound();
             }
             else
             {
+                var categories = _context.Categories.ToList();
+                var authors = _context.Authors.ToList();
+                var pubs = _context.PublishingHouses.ToList();
+                var Bookfiles = _context.BookFiles.Where(u => u.BookId == id).ToList();
+
+                BookCatAuthPubsVM BookCatAuthPubsVM = new()
+                {
+                    Categories = categories,
+                    Authors = authors,
+                    PublishingHouses = pubs,
+                    Book = new Book()
+                };
+
                 BookCatAuthPubsVM.Book = book;
                 return View(BookCatAuthPubsVM);
             }
         }
+
         [HttpPost]
+        [RequestSizeLimit(1_000_000_000)] // 1GB limit
         public IActionResult Edit(BookDataVM bookDataVM, List<IFormFile> files, List<int> ExistingFilesIds)
         {
-            // Get the existing book from database including its relationships
-            var existingBook = _context.Books
-                .Include(b => b.Files)
+            var books = _context.Books;
+            var existingBook = books
                 .Include(b => b.Authors)
                 .Include(b => b.PublishingHouses)
+                .Include(b => b.Files)
                 .FirstOrDefault(b => b.Id == bookDataVM.Id);
 
-            if (existingBook == null)
-            {
-                return NotFound();
-            }
+            if (existingBook == null) return NotFound();
 
-            // Update book properties
-            existingBook.Name = bookDataVM.Name;
-            existingBook.Price = bookDataVM.Price;
-            existingBook.AvailableCopies = bookDataVM.AvailableCopies;
-            existingBook.CategoryId = bookDataVM.CategoryId;
+            var authors = _context.Authors;
+            var pubs = _context.PublishingHouses;
+            var filesInDb = _context.BookFiles;
 
             // Handle existing files - remove files not in ExistingFilesIds
             var filesToDelete = existingBook.Files
@@ -180,34 +158,32 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 }
 
                 // Remove from database
-                _context.UploadedFiles.Remove(file);
+                // Attach and mark for deletion
+                _context.BookFiles.Attach(file);
+                _context.BookFiles.Remove(file);
+                _context.SaveChanges();
             }
 
-            // Handle authors
+            // Handle Authors - clear existing and add new
             existingBook.Authors.Clear();
-            foreach (var authId in bookDataVM.AuthorsIds)
+            foreach (var authorId in bookDataVM.AuthorsIds)
             {
-                var author = _context.Authors.Find(authId);
-                if (author != null)
-                {
-                    existingBook.Authors.Add(author);
-                }
+                var author = _context.Authors.Find(authorId);
+                if (author != null) existingBook.Authors.Add(author);
             }
 
-            // Handle publishers
+            // Handle Publishing Houses - same approach
             existingBook.PublishingHouses.Clear();
             foreach (var pubId in bookDataVM.PublishersIds)
             {
                 var pub = _context.PublishingHouses.Find(pubId);
-                if (pub != null)
-                {
-                    existingBook.PublishingHouses.Add(pub);
-                }
+                if (pub != null) existingBook.PublishingHouses.Add(pub);
             }
 
-            // Handle new file uploads
-            var uploadedFiles_db = _context.UploadedFiles;
+            //Uploading New Files
+            // Common image extensions
             var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
+            // Common video extensions
             var videoExtensions = new[] { ".mp4", ".mov", ".avi", ".mkv", ".webm", ".wmv" };
 
             foreach (var newfile in files)
@@ -224,27 +200,27 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                         newfile.CopyTo(stream);
                     }
 
-                    // Create new UploadedFile entity
-                    var uploadedFile = new UploadedFile
+                    // Save File in Files Table
+                    BookFile bookFile = new()
                     {
                         Name = fileName,
-                        FileType = imageExtensions.Contains(extension)
-                            ? FileType.Image
-                            : videoExtensions.Contains(extension)
-                                ? FileType.Video
-                                : throw new Exception("Unsupported file type")
                     };
-                    // Add file to Db
-                    uploadedFiles_db.Add(uploadedFile);
+                    if (imageExtensions.Contains(extension))
+                    {
+                        bookFile.FileType = FileType.Image;
+                    }
+                    else if (videoExtensions.Contains(extension))
+                    {
+                        bookFile.FileType = FileType.Video;
+                    }
+                    filesInDb.Add(bookFile);
                     _context.SaveChanges();
-                    // Add to book
-                    existingBook.Files.Add(uploadedFile);
+
+                    //Save File to Book Table
+                    existingBook.Files.Add(bookFile);
                 }
             }
-
-            // Save all changes at once
             _context.SaveChanges();
-
             return RedirectToAction(nameof(Index));
         }
 

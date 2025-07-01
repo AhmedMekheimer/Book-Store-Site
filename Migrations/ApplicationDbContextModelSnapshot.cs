@@ -74,6 +74,31 @@ namespace Online_Book_Store.Migrations
                     b.ToTable("Authors");
                 });
 
+            modelBuilder.Entity("Online_Book_Store.Models.AuthorFile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AuthorId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FileType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.ToTable("AuthorFiles");
+                });
+
             modelBuilder.Entity("Online_Book_Store.Models.Book", b =>
                 {
                     b.Property<int>("Id")
@@ -102,6 +127,31 @@ namespace Online_Book_Store.Migrations
                     b.ToTable("Books");
                 });
 
+            modelBuilder.Entity("Online_Book_Store.Models.BookFile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("BookId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FileType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookId");
+
+                    b.ToTable("BookFiles");
+                });
+
             modelBuilder.Entity("Online_Book_Store.Models.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -120,6 +170,31 @@ namespace Online_Book_Store.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("Online_Book_Store.Models.CategoryFile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FileType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("CategoryFiles");
                 });
 
             modelBuilder.Entity("Online_Book_Store.Models.PublishingHouse", b =>
@@ -142,22 +217,13 @@ namespace Online_Book_Store.Migrations
                     b.ToTable("PublishingHouses");
                 });
 
-            modelBuilder.Entity("Online_Book_Store.Models.UploadedFile", b =>
+            modelBuilder.Entity("Online_Book_Store.Models.PublishingHouseFile", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("AuthorId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("BookId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("CategoryId")
-                        .HasColumnType("int");
 
                     b.Property<int>("FileType")
                         .HasColumnType("int");
@@ -171,15 +237,9 @@ namespace Online_Book_Store.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AuthorId");
-
-                    b.HasIndex("BookId");
-
-                    b.HasIndex("CategoryId");
-
                     b.HasIndex("PublishingHouseId");
 
-                    b.ToTable("UploadedFiles");
+                    b.ToTable("PublishingHouseFiles");
                 });
 
             modelBuilder.Entity("AuthorBook", b =>
@@ -212,6 +272,16 @@ namespace Online_Book_Store.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Online_Book_Store.Models.AuthorFile", b =>
+                {
+                    b.HasOne("Online_Book_Store.Models.Author", "Author")
+                        .WithMany("Files")
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Author");
+                });
+
             modelBuilder.Entity("Online_Book_Store.Models.Book", b =>
                 {
                     b.HasOne("Online_Book_Store.Models.Category", null)
@@ -221,33 +291,32 @@ namespace Online_Book_Store.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Online_Book_Store.Models.UploadedFile", b =>
+            modelBuilder.Entity("Online_Book_Store.Models.BookFile", b =>
                 {
-                    b.HasOne("Online_Book_Store.Models.Author", "Author")
-                        .WithMany("Files")
-                        .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("Online_Book_Store.Models.Book", "Book")
                         .WithMany("Files")
                         .HasForeignKey("BookId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.Navigation("Book");
+                });
+
+            modelBuilder.Entity("Online_Book_Store.Models.CategoryFile", b =>
+                {
                     b.HasOne("Online_Book_Store.Models.Category", "Category")
                         .WithMany("Files")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("Online_Book_Store.Models.PublishingHouseFile", b =>
+                {
                     b.HasOne("Online_Book_Store.Models.PublishingHouse", "PublishingHouse")
                         .WithMany("Files")
                         .HasForeignKey("PublishingHouseId")
                         .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("Author");
-
-                    b.Navigation("Book");
-
-                    b.Navigation("Category");
 
                     b.Navigation("PublishingHouse");
                 });

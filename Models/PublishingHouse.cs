@@ -6,6 +6,6 @@
         public string Name { get; set; } = null!;
         public string? Description { get; set; }
         public List<Book> Books { get; set; } = new List<Book>();
-        public ICollection<UploadedFile> Files { get; set; } = new List<UploadedFile>();
+        public ICollection<PublishingHouseFile> Files { get; set; } = new List<PublishingHouseFile>();
     }
 }

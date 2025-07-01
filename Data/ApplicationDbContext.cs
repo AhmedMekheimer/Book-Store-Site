@@ -1,14 +1,22 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Runtime.ConstrainedExecution;
 
 namespace Online_Book_Store.Data
 {
-    public class ApplicationDbContext:DbContext
+    public class ApplicationDbContext : DbContext
     {
         public DbSet<Book> Books { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Author> Authors { get; set; }
         public DbSet<PublishingHouse> PublishingHouses { get; set; }
-        public DbSet<UploadedFile> UploadedFiles { get; set; }
+
+        // File tables
+        public DbSet<BookFile> BookFiles { get; set; }
+        public DbSet<AuthorFile> AuthorFiles { get; set; }
+        public DbSet<PublishingHouseFile> PublishingHouseFiles { get; set; }
+        public DbSet<CategoryFile> CategoryFiles { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
@@ -17,31 +25,30 @@ namespace Online_Book_Store.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Configure all file relationships
-            modelBuilder.Entity<UploadedFile>()
-                .HasOne(f => f.Author)
-                .WithMany(a => a.Files)
-                .HasForeignKey(f => f.AuthorId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<UploadedFile>()
-                .HasOne(f => f.Book)
+            // Configure relationships with cascade delete
+            modelBuilder.Entity<BookFile>()
+                .HasOne(bf => bf.Book)
                 .WithMany(b => b.Files)
-                .HasForeignKey(f => f.BookId)
+                .HasForeignKey(bf => bf.BookId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<UploadedFile>()
-                .HasOne(f => f.PublishingHouse)
-                .WithMany(p => p.Files)
-                .HasForeignKey(f => f.PublishingHouseId)
+            modelBuilder.Entity<AuthorFile>()
+                .HasOne(af => af.Author)
+                .WithMany(a => a.Files)
+                .HasForeignKey(af => af.AuthorId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<UploadedFile>()
-                .HasOne(f => f.Category)
-                .WithMany(c => c.Files)
-                .HasForeignKey(f => f.CategoryId)
+            modelBuilder.Entity<CategoryFile>()
+                .HasOne(af => af.Category)
+                .WithMany(a => a.Files)
+                .HasForeignKey(af => af.CategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<PublishingHouseFile>()
+                .HasOne(af => af.PublishingHouse)
+                .WithMany(a => a.Files)
+                .HasForeignKey(af => af.PublishingHouseId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

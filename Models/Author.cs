@@ -7,6 +7,6 @@
         public string? Bio { get; set; }
         public List<string>? SocialMedias { get; set; }
         public List<Book> Books { get; set; } = new List<Book>();
-        public ICollection<UploadedFile> Files { get; set; } = new List<UploadedFile>();
+        public ICollection<AuthorFile> Files { get; set; } = new List<AuthorFile>();
     }
 }

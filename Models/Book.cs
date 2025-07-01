@@ -9,6 +9,6 @@
         public int CategoryId { get; set; }
         public List<Author> Authors { get; set; } = new List<Author>();
         public List<PublishingHouse> PublishingHouses { get; set; } = new List<PublishingHouse>();
-        public ICollection<UploadedFile> Files { get; set; } = new List<UploadedFile>();
+        public ICollection<BookFile> Files { get; set; } = new List<BookFile>();
     }
 }
