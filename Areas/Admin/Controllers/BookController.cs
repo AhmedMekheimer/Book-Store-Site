@@ -2,6 +2,7 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Online_Book_Store.Models;
+using Online_Book_Store.Models.File_Entities;
 using Online_Book_Store.ViewModels;
 
 namespace Online_Book_Store.Areas.Admin.Controllers
@@ -44,46 +45,29 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 Files = new List<BookFile>()
             };
 
-            // Common image extensions
-            var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
-            // Common video extensions
-            var videoExtensions = new[] { ".mp4", ".mov", ".avi", ".mkv", ".webm", ".wmv" };
-
             foreach (var file in files)
             {
-                if (file is not null && file.Length > 0)
+                //Save File in Physical Storage
+                string fileName;
+                FileType fileType;
+                (fileName, fileType) = FileService.UploadNewFile(file);
+
+                if (fileName is not null && (fileType == FileType.Image || fileType == FileType.Video))
                 {
-                    // Save File in wwwroot
-                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\Files", fileName);
-                    var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-
-                    using (var stream = System.IO.File.Create(filePath))
-                    {
-                        file.CopyTo(stream);
-                    }
-
-                    // Save File in Files Table
+                    // Save File in Db
                     BookFile bookFile = new()
                     {
                         Name = fileName,
+                        FileType = fileType
                     };
-                    if (imageExtensions.Contains(extension))
-                    {
-                        bookFile.FileType = FileType.Image;
-                    }
-                    else if (videoExtensions.Contains(extension))
-                    {
-                        bookFile.FileType = FileType.Video;
-                    }
                     _context.BookFiles.Add(bookFile);
                     _context.SaveChanges();
 
                     //Save File to Book Table
                     book.Files.Add(bookFile);
                 }
-            }
 
+            }
             foreach (var authId in bookDataVM.AuthorsIds)
             {
                 book.Authors.Add(authors.Find(authId));
@@ -164,7 +148,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 _context.SaveChanges();
             }
 
-            // Handle Authors - clear existing and add new
+            // Handle Authors 
             existingBook.Authors.Clear();
             foreach (var authorId in bookDataVM.AuthorsIds)
             {
@@ -172,7 +156,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 if (author != null) existingBook.Authors.Add(author);
             }
 
-            // Handle Publishing Houses - same approach
+            // Handle Publishing Houses 
             existingBook.PublishingHouses.Clear();
             foreach (var pubId in bookDataVM.PublishersIds)
             {
@@ -180,40 +164,23 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 if (pub != null) existingBook.PublishingHouses.Add(pub);
             }
 
-            //Uploading New Files
-            // Common image extensions
-            var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
-            // Common video extensions
-            var videoExtensions = new[] { ".mp4", ".mov", ".avi", ".mkv", ".webm", ".wmv" };
-
-            foreach (var newfile in files)
+            //Upload New Files
+            foreach (var file in files)
             {
-                if (newfile is not null && newfile.Length > 0)
+                //Save File in Physical Storage
+                string fileName;
+                FileType fileType;
+                (fileName, fileType) = FileService.UploadNewFile(file);
+
+                if (fileName is not null && (fileType == FileType.Image || fileType == FileType.Video))
                 {
-                    // Save File in wwwroot
-                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(newfile.FileName);
-                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\Files", fileName);
-                    var extension = Path.GetExtension(newfile.FileName).ToLowerInvariant();
-
-                    using (var stream = System.IO.File.Create(filePath))
-                    {
-                        newfile.CopyTo(stream);
-                    }
-
-                    // Save File in Files Table
+                    // Save File in Db
                     BookFile bookFile = new()
                     {
                         Name = fileName,
+                        FileType = fileType
                     };
-                    if (imageExtensions.Contains(extension))
-                    {
-                        bookFile.FileType = FileType.Image;
-                    }
-                    else if (videoExtensions.Contains(extension))
-                    {
-                        bookFile.FileType = FileType.Video;
-                    }
-                    filesInDb.Add(bookFile);
+                    _context.BookFiles.Add(bookFile);
                     _context.SaveChanges();
 
                     //Save File to Book Table
@@ -237,5 +204,4 @@ namespace Online_Book_Store.Areas.Admin.Controllers
             return NotFound();
         }
     }
-
 }

@@ -28,7 +28,7 @@
 			</div>
 
 			<!-- Existing Images -->
-			<div class="existing-images mb-3">
+			<div class="form-group mb-3">
 				<label>Existing Images</label>
 				<div class="d-flex flex-wrap gap-2" id="existingImagesContainer">
 					@foreach (var file in Model.Book.Files.Where(f => f.FileType == FileType.Image))
@@ -47,23 +47,20 @@
 			</div>
 
 			<!-- New Images -->
-			<div class="form-group">
+			<div class="form-group mb-3">
 				<label>Upload New Images</label>
 				<input type="file" class="form-control" accept="image/*" id="files" name="files" multiple onchange="previewImages(event)" required>
 				<div id="imagePreviews" class="d-flex flex-wrap gap-2 mt-2"></div>
 			</div>
 
 			<!-- Existing Videos -->
-			<div class="existing-videos mb-3">
+			<div class="form-group mb-3">
 				<label>Existing Videos</label>
 				<div class="d-flex flex-wrap gap-2" id="existingVideosContainer">
 					@foreach (var file in Model.Book.Files.Where(f => f.FileType == FileType.Video))
 					{
 						<div class="position-relative" id="existingVideo_@file.Id">
-							<video width="200" height="150" controls class="img-thumbnail">
-								<source src="~/Files/@file.Name" type="video/mp4">
-								Your browser does not support the video tag.
-							</video>
+							<p>@file.Name</p>
 							<button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0"
 									onclick="toggleFileDeletion(@file.Id, this)">
 								&times;
@@ -76,17 +73,17 @@
 			</div>
 
 			<!--New Videos-->
-			<div class="form-group">
+			<div class="form-group mb-3">
 				<label>Upload New Videos</label>
 				<input type="file" class="form-control" accept="video/*" id="files" name="files" multiple required>
 			</div>
 
-			<div class="form-group">
+			<div class="form-group mb-3">
 				<label for="AvailableCopies">No. Available Copies</label>
 				<input value="@Model.Book.AvailableCopies" type="number" id="AvailableCopies" name="AvailableCopies" class="form-control" placeholder="Enter No. Available Copies" min="0" required oninput="validity.valid||(value='');">
 			</div>
 
-			<div class="form-group">
+			<div class="form-group mb-3">
 				<label for="CategoryId">Category</label>
 				<select name="categoryId" class="form-control" required>
 					@foreach (var cat in Model.Categories)
@@ -103,7 +100,7 @@
 				</select>
 			</div>
 
-			<div class="form-group">
+			<div class="form-group mb-3">
 				<label for="AuthorsIds">Select Authors:</label>
 				<select name="AuthorsIds" id="AuthorsIds" multiple class="multi-select" style="width:100%" required>
 					@foreach (var bookauth in Model.Book.Authors)
@@ -124,7 +121,7 @@
 				</select>
 			</div>
 
-			<div class="form-group">
+			<div class="form-group mb-3">
 				<label for="PublishersIds">Select Publishing Houses:</label>
 				<select name="PublishersIds" id="PublishersIds" multiple class="multi-select" style="width:100%" required>
 					@foreach (var bookpub in Model.Book.PublishingHouses)
@@ -153,18 +150,6 @@
 				</button>
 			</div>
 		</form>
-
-		<div class="form-preview">
-			<h3>Preview</h3>
-			<div class="preview-card">
-				<div class="preview-icon" id="previewIcon">
-					<i class="fas fa-book"></i>
-				</div>
-				<div class="preview-details">
-					<h4 id="previewName">Book Name</h4>
-				</div>
-			</div>
-		</div>
 	</div>
 </div>
 @section Scripts {
