@@ -8,19 +8,40 @@
 	</div>
 
 	<div class="create-form-container">
-		<form asp-action="Edit" method="post">
-            <div class="form-group">
-                <input type="hidden" name="id" value="@Model.Id" />
-            </div>
+		<form asp-action="Edit" method="post" enctype="multipart/form-data">
+			<div class="form-group">
+				<input type="hidden" name="id" value="@Model.Id" />
+			</div>
 
 			<div class="form-group">
 				<label for="Name">Author Name</label>
 				<input value="@Model.Name" type="text" id="Name" name="Name" class="form-control" placeholder="Enter author name" required>
+				<span style="color:red" style="color:red" class="text-danger" asp-validation-for="Name"></span>
+			</div>
+
+			<!-- Existing Image -->
+			<div class="form-group mb-3">
+				<label>Author Image</label>
+				<div class="d-flex flex-wrap gap-2" id="existingImagesContainer">
+					@foreach (var file in Model.Files.Where(f => f.FileType == FileType.Image))
+					{
+						<div class="position-relative" id="existingImage_@file.Id">
+							<img src="~/Files/@file.Name" alt="@file.Name" class="img-thumbnail" style="max-height: 150px;">
+						</div>
+					}
+				</div>
+			</div>
+
+			<!-- New Image Upload -->
+			<div class="form-group mb-3">
+				<label>Upload New Image</label>
+				<input type="file" class="form-control" accept="image/*" id="file" name="file">
 			</div>
 
 			<div class="form-group">
 				<label for="Bio">Bio</label>
 				<textarea id="Bio" name="Bio" class="form-control" rows="4" placeholder="Enter author bio">@Model.Bio</textarea>
+				<span style="color:red" style="color:red" class="text-danger" asp-validation-for="Bio"></span>
 			</div>
 
 			<!-- Social Media Links -->
@@ -58,146 +79,95 @@
 				</button>
 			</div>
 		</form>
-
-		<div class="form-preview">
-			<h3>Preview</h3>
-			<div class="preview-card">
-				<div class="preview-icon" id="previewIcon">
-					<i class="fas fa-book"></i>
-				</div>
-				<div class="preview-details">
-					<h4 id="previewName">Author Name</h4>
-					<p id="previewBio">Bio will appear here</p>
-				</div>
-			</div>
-		</div>
 	</div>
 </div>
 
 @section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // --- Social Media Fields Management ---
-            const container = document.getElementById('socialMediasContainer');
-            const addButton = document.getElementById('addSocialMedia');
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			// --- Social Media Fields Management ---
+			const container = document.getElementById('socialMediasContainer');
+			const addButton = document.getElementById('addSocialMedia');
 
-            if (container && addButton) {
-                // Function to update remove buttons state
-                function updateRemoveButtons() {
-                    const groups = container.querySelectorAll('.input-group');
-                    groups.forEach(group => {
-                        const removeBtn = group.querySelector('.btn-remove');
-                        removeBtn.disabled = groups.length === 1;
-                    });
-                }
+			if (container && addButton) {
+				// Function to update remove buttons state
+				function updateRemoveButtons() {
+					const groups = container.querySelectorAll('.input-group');
+					groups.forEach(group => {
+						const removeBtn = group.querySelector('.btn-remove');
+						removeBtn.disabled = groups.length === 1;
+					});
+				}
 
-                // Function to remove a field group
-                function removeFieldGroup(group) {
-                    container.removeChild(group);
-                    updateRemoveButtons();
-                }
+				// Function to remove a field group
+				function removeFieldGroup(group) {
+					container.removeChild(group);
+					updateRemoveButtons();
+				}
 
-                // Add new social media field
-                addButton.addEventListener('click', function() {
-                    const newGroup = document.createElement('div');
-                    newGroup.className = 'input-group mb-2';
+				// Add new social media field
+				addButton.addEventListener('click', function() {
+					const newGroup = document.createElement('div');
+					newGroup.className = 'input-group mb-2';
 
-                    newGroup.innerHTML = `
-                        <input type="text" name="SocialMedias" class="form-control" placeholder="https://example.com/username" required>
-                        <button type="button" class="btn btn-remove">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    `;
+					newGroup.innerHTML = `
+						<input type="text" name="SocialMedias" class="form-control" placeholder="https://example.com/username" required>
+						<button type="button" class="btn btn-remove">
+							<i class="fas fa-times"></i>
+						</button>
+					`;
 
-                    container.appendChild(newGroup);
+					container.appendChild(newGroup);
 
-                    // Add event to the new remove button
-                    newGroup.querySelector('.btn-remove').addEventListener('click', function() {
-                        removeFieldGroup(newGroup);
-                    });
+					// Add event to the new remove button
+					newGroup.querySelector('.btn-remove').addEventListener('click', function() {
+						removeFieldGroup(newGroup);
+					});
 
-                    updateRemoveButtons();
-                });
+					updateRemoveButtons();
+				});
 
-                // Add event to existing remove buttons
-                container.querySelectorAll('.btn-remove').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const group = this.closest('.input-group');
-                        removeFieldGroup(group);
-                    });
-                });
+				// Add event to existing remove buttons
+				container.querySelectorAll('.btn-remove').forEach(button => {
+					button.addEventListener('click', function() {
+						const group = this.closest('.input-group');
+						removeFieldGroup(group);
+					});
+				});
 
-                // Initialize button states
-                updateRemoveButtons();
-            }
+				// Initialize button states
+				updateRemoveButtons();
+			}
 
-            // --- Preview Functionality (Only if elements exist) ---
-            const nameInput = document.getElementById('Name');
-            const previewName = document.getElementById('previewName');
+			// Client-Side Validation
+			const form = document.querySelector('form');
+			if (form) {
+				form.addEventListener('submit', function(e) {
+					if (!nameInput?.value.trim()) {
+						e.preventDefault();
+						nameInput.focus();
+						alert('Author name is required');
+						return false;
+					}
 
-            if (nameInput && previewName) {
-                nameInput.addEventListener('input', function() {
-                    previewName.textContent = this.value || 'Author Name';
-                });
-            }
+					// Validate social media links
+					const socialInputs = container.querySelectorAll('input[name="SocialMedias"]');
+					let hasValue = false;
 
-            const descInput = document.getElementById('Bio');
-            const previewDesc = document.getElementById('previewBio');
+					socialInputs.forEach(input => {
+						if (input.value.trim()) {
+							hasValue = true;
+						}
+					});
 
-            if (descInput && previewDesc) {
-                descInput.addEventListener('input', function() {
-                    previewDesc.textContent = this.value || 'Bio will appear here';
-                });
-            }
-
-            const imageInput = document.getElementById('Picture');
-            const imagePreview = document.getElementById('imagePreview');
-
-            if (imageInput && imagePreview) {
-                imageInput.addEventListener('input', function() {
-                    const url = this.value.trim();
-
-                    if (url) {
-                        imagePreview.innerHTML = `<img src="${url}" alt="Preview" onerror="this.style.display='none'">`;
-                        if (imagePreview.querySelector('.preview-text')) {
-                            imagePreview.querySelector('.preview-text').style.display = 'none';
-                        }
-                    } else {
-                        imagePreview.innerHTML = '<div class="preview-text">Image preview will appear here</div>';
-                    }
-                });
-            }
-
-            // Form validation
-            const form = document.querySelector('form');
-            if (form) {
-                form.addEventListener('submit', function(e) {
-                    if (!nameInput?.value.trim()) {
-                        e.preventDefault();
-                        nameInput.focus();
-                        alert('Author name is required');
-                        return false;
-                    }
-
-                    // Validate social media links
-                    const socialInputs = container.querySelectorAll('input[name="SocialMedias"]');
-                    let hasValue = false;
-
-                    socialInputs.forEach(input => {
-                        if (input.value.trim()) {
-                            hasValue = true;
-                        }
-                    });
-
-                    if (!hasValue) {
-                        e.preventDefault();
-                        alert('Please add at least one social media link');
-                        return false;
-                    }
-
-                    return true;
-                });
-            }
-        });
-    </script>
+					if (!hasValue) {
+						e.preventDefault();
+						alert('Please add at least one social media link');
+						return false;
+					}
+					return true;
+				});
+			}
+		});
+	</script>
 }

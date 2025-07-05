@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Online_Book_Store.Models;
 using Online_Book_Store.Models.File_Entities;
 using Online_Book_Store.ViewModels;
+using System;
 
 namespace Online_Book_Store.Areas.Admin.Controllers
 {
@@ -34,14 +35,50 @@ namespace Online_Book_Store.Areas.Admin.Controllers
         [RequestSizeLimit(1_000_000_000)] // 1GB limit
         public IActionResult Create(BookDataVM bookDataVM, List<IFormFile> files)
         {
+            if (bookDataVM.Book is null)
+                return NotFound();
+
             var authors = _context.Authors;
             var pubs = _context.PublishingHouses;
+
+            ModelState.Remove("files");
+            if (!ModelState.IsValid)
+            {
+                foreach (var authId in bookDataVM.AuthorsIds)
+                {
+                    if (authors.Find(authId) is Author auth)
+                    {
+                        bookDataVM.Book.Authors.Add(auth);
+                    }
+                }
+                foreach (var pubId in bookDataVM.PublishersIds)
+                {
+                    if (pubs.Find(pubId) is PublishingHouse pub)
+                    {
+                        bookDataVM.Book.PublishingHouses.Add(pub);
+                    }
+                }
+                var categoriesList = _context.Categories.ToList();
+                var authorsList = _context.Authors.ToList();
+                var pubsList = _context.PublishingHouses.ToList();
+
+                BookCatAuthPubsVM BookCatAuthPubsVM = new()
+                {
+                    Categories = categoriesList,
+                    Authors = authorsList,
+                    PublishingHouses = pubsList,
+                    Book = bookDataVM.Book
+                };
+                return View(BookCatAuthPubsVM);
+            }
+
+
             Book book = new()
             {
-                Name = bookDataVM.Name,
-                Price = bookDataVM.Price,
-                AvailableCopies = bookDataVM.AvailableCopies,
-                CategoryId = bookDataVM.CategoryId,
+                Name = bookDataVM.Book.Name,
+                Price = bookDataVM.Book.Price,
+                AvailableCopies = bookDataVM.Book.AvailableCopies,
+                CategoryId = bookDataVM.Book.CategoryId,
                 Files = new List<BookFile>()
             };
 
@@ -66,15 +103,22 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                     //Save File to Book Table
                     book.Files.Add(bookFile);
                 }
-
+                else
+                    return NotFound();
             }
             foreach (var authId in bookDataVM.AuthorsIds)
             {
-                book.Authors.Add(authors.Find(authId));
+                if (authors.Find(authId) is Author auth)
+                {
+                    book.Authors.Add(auth);
+                }
             }
             foreach (var pubId in bookDataVM.PublishersIds)
             {
-                book.PublishingHouses.Add(pubs.Find(pubId));
+                if (pubs.Find(pubId) is PublishingHouse pub)
+                {
+                    book.PublishingHouses.Add(pub);
+                }
             }
             _context.Books.Add(book);
             _context.SaveChanges();
@@ -84,8 +128,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
 
         public IActionResult Edit(int id)
         {
-            var books = _context.Books;
-            Book? book = books.Include(b => b.Authors).Include(b => b.PublishingHouses).Include(b => b.Files).SingleOrDefault(e => e.Id == id);
+            Book? book = _context.Books.Include(b => b.Authors).Include(b => b.PublishingHouses).Include(b => b.Files).SingleOrDefault(e => e.Id == id);
             if (book is null)
             {
                 return NotFound();
@@ -95,7 +138,6 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 var categories = _context.Categories.ToList();
                 var authors = _context.Authors.ToList();
                 var pubs = _context.PublishingHouses.ToList();
-                var Bookfiles = _context.BookFiles.Where(u => u.BookId == id).ToList();
 
                 BookCatAuthPubsVM BookCatAuthPubsVM = new()
                 {
@@ -114,17 +156,72 @@ namespace Online_Book_Store.Areas.Admin.Controllers
         [RequestSizeLimit(1_000_000_000)] // 1GB limit
         public IActionResult Edit(BookDataVM bookDataVM, List<IFormFile> files, List<int> ExistingFilesIds)
         {
+            //Db Instances
+            var categories = _context.Categories;
+            var authors = _context.Authors;
+            var pubs = _context.PublishingHouses;
             var books = _context.Books;
+
+            ModelState.Remove("files");
+            ModelState.Remove("ExistingFilesIds");
+            //Invalid Server Side
+            if (!ModelState.IsValid)
+            {
+                if (bookDataVM.Book is null)
+                    return NotFound();
+
+                Book? book = books.Include(b => b.Files).AsNoTracking().SingleOrDefault(e => e.Id == bookDataVM.Book.Id);
+                if (book is null)
+                {
+                    return NotFound();
+                }
+
+                foreach (var authId in bookDataVM.AuthorsIds)
+                {
+                    if (authors.Find(authId) is Author auth)
+                    {
+                        book.Authors.Add(auth);
+                    }
+                }
+                foreach (var pubId in bookDataVM.PublishersIds)
+                {
+                    if (pubs.Find(pubId) is PublishingHouse pub)
+                    {
+                        book.PublishingHouses.Add(pub);
+                    }
+                }
+
+                BookCatAuthPubsVM BookCatAuthPubsVM = new()
+                {
+                    Categories = categories.ToList(),
+                    Authors = authors.ToList(),
+                    PublishingHouses = pubs.ToList(),
+                    Book = new Book()
+                };
+                book.Name = bookDataVM.Book.Name;
+                book.Price = bookDataVM.Book.Price;
+                book.AvailableCopies = bookDataVM.Book.AvailableCopies;
+                book.CategoryId = bookDataVM.Book.CategoryId;
+
+                BookCatAuthPubsVM.Book = book;
+                return View(BookCatAuthPubsVM);
+            }
+
             var existingBook = books
                 .Include(b => b.Authors)
                 .Include(b => b.PublishingHouses)
                 .Include(b => b.Files)
-                .FirstOrDefault(b => b.Id == bookDataVM.Id);
+                .FirstOrDefault(b => b.Id == bookDataVM.Book!.Id);
 
             if (existingBook == null) return NotFound();
 
-            var authors = _context.Authors;
-            var pubs = _context.PublishingHouses;
+            //Primitive data types
+            existingBook.Name = bookDataVM.Book!.Name;
+            existingBook.Price = bookDataVM.Book.Price;
+            existingBook.AvailableCopies = bookDataVM.Book.AvailableCopies;
+            existingBook.CategoryId = bookDataVM.Book.CategoryId;
+
+            //Db Instance
             var filesInDb = _context.BookFiles;
 
             // Handle existing files - remove files not in ExistingFilesIds
@@ -150,18 +247,22 @@ namespace Online_Book_Store.Areas.Admin.Controllers
 
             // Handle Authors 
             existingBook.Authors.Clear();
-            foreach (var authorId in bookDataVM.AuthorsIds)
+            foreach (var authId in bookDataVM.AuthorsIds)
             {
-                var author = _context.Authors.Find(authorId);
-                if (author != null) existingBook.Authors.Add(author);
+                if (authors.Find(authId) is Author auth)
+                {
+                    existingBook.Authors.Add(auth);
+                }
             }
 
             // Handle Publishing Houses 
             existingBook.PublishingHouses.Clear();
             foreach (var pubId in bookDataVM.PublishersIds)
             {
-                var pub = _context.PublishingHouses.Find(pubId);
-                if (pub != null) existingBook.PublishingHouses.Add(pub);
+                if (pubs.Find(pubId) is PublishingHouse pub)
+                {
+                    existingBook.PublishingHouses.Add(pub);
+                }
             }
 
             //Upload New Files
@@ -187,6 +288,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                     existingBook.Files.Add(bookFile);
                 }
             }
+
             _context.SaveChanges();
             return RedirectToAction(nameof(Index));
         }

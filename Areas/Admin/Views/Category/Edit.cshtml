@@ -9,7 +9,7 @@
 	</div>
 
 	<div class="create-form-container">
-		<form asp-action="Edit" method="post">
+		<form asp-action="Edit" method="post" enctype="multipart/form-data">
 			<div class="form-group">
 				<input type="hidden" name="id" value="@Model.Id" />
 			</div>
@@ -18,6 +18,56 @@
 				<label for="Name">Category Name</label>
 				<input type="text" id="Name" name="Name" class="form-control" placeholder="Enter category name" value="@Model.Name" required>
 				<div class="form-hint">e.g. Fiction, Science, Romance</div>
+			</div>
+
+			<!-- Existing Images -->
+			<div class="form-group mb-3">
+				<label>Existing Images</label>
+				<div class="d-flex flex-wrap gap-2" id="existingImagesContainer">
+					@foreach (var file in Model.Files.Where(f => f.FileType == FileType.Image))
+					{
+						<div class="position-relative" id="existingImage_@file.Id">
+							<img src="~/Files/@file.Name" alt="@file.Name" class="img-thumbnail" style="max-height: 150px;">
+							<button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0"
+									onclick="toggleFileDeletion(@file.Id, this)">
+								&times;
+							</button>
+							<!-- Hidden input for existing file ID -->
+							<input type="hidden" name="ExistingFilesIds" value="@file.Id" id="fileInput_@file.Id">
+						</div>
+					}
+				</div>
+			</div>
+
+			<!-- New Images -->
+			<div class="form-group mb-3">
+				<label>Upload New Images</label>
+				<input type="file" class="form-control" accept="image/*" id="files" name="files" multiple onchange="previewImages(event)">
+			</div>
+
+			<!-- Existing Videos -->
+			<div class="form-group mb-3">
+				<label>Existing Videos</label>
+				<div class="d-flex flex-wrap gap-2" id="existingVideosContainer">
+					@foreach (var file in Model.Files.Where(f => f.FileType == FileType.Video))
+					{
+						<div class="position-relative" id="existingVideo_@file.Id">
+							<p>@file.Name</p>
+							<button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0"
+									onclick="toggleFileDeletion(@file.Id, this)">
+								&times;
+							</button>
+							<!-- Hidden input for existing file ID -->
+							<input type="hidden" name="ExistingFilesIds" value="@file.Id" id="fileInput_@file.Id">
+						</div>
+					}
+				</div>
+			</div>
+
+			<!--New Videos-->
+			<div class="form-group mb-3">
+				<label>Upload New Videos</label>
+				<input type="file" class="form-control" accept="video/*" id="files" name="files" multiple>
 			</div>
 
 			<div class="form-group">
@@ -35,65 +85,108 @@
 				</button>
 			</div>
 		</form>
-
-		<div class="form-preview">
-			<h3>Preview</h3>
-			<div class="preview-card">
-				<div class="preview-icon" id="previewIcon">
-					<i class="fas fa-book"></i>
-				</div>
-				<div class="preview-details">
-					<h4 id="previewName">Category Name</h4>
-					<p id="previewDescription">Description will appear here</p>
-				</div>
-			</div>
-		</div>
 	</div>
 </div>
 @section Scripts {
 	<script>
-		document.addEventListener('DOMContentLoaded', function() {
-			// Live preview for category name
-			const nameInput = document.getElementById('Name');
-			const previewName = document.getElementById('previewName');
 
-			nameInput.addEventListener('input', function() {
-				previewName.textContent = this.value || 'Category Name';
-			});
+		// Single toggle function for both Existing images and videos
+		function toggleFileDeletion(fileId, button) {
+			const container = button.closest('.position-relative');
+			const hiddenInput = container.querySelector('input[name="ExistingFilesIds"]');
 
-			// Live preview for description
-			const descInput = document.getElementById('Description');
-			const previewDesc = document.getElementById('previewDescription');
+			if (!hiddenInput) {
+				// If input doesn't exist (shouldn't happen), create it
+				const newInput = document.createElement('input');
+				newInput.type = 'hidden';
+				newInput.name = 'ExistingFilesIds';
+				newInput.value = fileId;
+				newInput.id = `fileInput_${fileId}`;
+				container.appendChild(newInput);
+				return;
+			}
 
-			descInput.addEventListener('input', function() {
-				previewDesc.textContent = this.value || 'Description will appear here';
-			});
+			if (hiddenInput.disabled) {
+				// Undo deletion - re-enable the input
+				hiddenInput.disabled = false;
+				button.innerHTML = '&times;';
+				button.classList.remove('btn-secondary');
+				button.classList.add('btn-danger');
+				container.style.opacity = '1';
+			} else {
+				// Mark for deletion - disable the input
+				hiddenInput.disabled = true;
+				button.innerHTML = 'Undo';
+				button.classList.remove('btn-danger');
+				button.classList.add('btn-secondary');
+				container.style.opacity = '0.5';
+			}
+		}
 
-			// Image URL preview
-			const imageInput = document.getElementById('Picture');
-			const imagePreview = document.getElementById('imagePreview');
+		//Preview Multiple Images
+		function previewImages(event)
+		{
+			const input = event.target;
+			const previewContainer = document.getElementById('imagePreviews');
 
-			imageInput.addEventListener('input', function() {
-				const url = this.value.trim();
+			// Clear previous previews
+			previewContainer.innerHTML = '';
 
-				if (url) {
-					imagePreview.innerHTML = `<img src="${url}" alt="Preview" onerror="this.style.display='none'; document.querySelector('.preview-text').style.display='block'">`;
-					imagePreview.querySelector('.preview-text').style.display = 'none';
-				} else {
-					imagePreview.innerHTML = '<div class="preview-text">Image preview will appear here</div>';
-				}
-			});
+			if (input.files && input.files.length > 0) {
+				// Array to store files for later upload
+				window.imageFiles = Array.from(input.files);
 
-			// Form validation
-			const form = document.querySelector('form');
+				// Create preview for each file
+				Array.from(input.files).forEach((file, index) => {
+					if (!file.type.match('image.*')) {
+						return; // Skip non-image files
+					}
 
-			form.addEventListener('submit', function(e) {
-				if (!nameInput.value.trim()) {
-					e.preventDefault();
-					nameInput.focus();
-					alert('Category name is required');
-				}
-			});
-		});
+					const reader = new FileReader();
+					const previewDiv = document.createElement('div');
+					previewDiv.className = 'position-relative d-inline-block';
+
+					reader.onload = function(e) {
+						const img = document.createElement('img');
+						img.src = e.target.result;
+						img.className = 'img-thumbnail';
+						img.style.maxHeight = '200px';
+						img.style.marginRight = '10px';
+						img.style.marginBottom = '10px';
+
+						// Add remove button
+						const removeBtn = document.createElement('button');
+						removeBtn.innerHTML = '&times;';
+						removeBtn.className = 'btn btn-danger btn-sm position-absolute top-0 end-0';
+						removeBtn.style.transform = 'translate(50%, -50%)';
+						removeBtn.onclick = () => removeImage(index);
+
+						previewDiv.appendChild(img);
+						previewDiv.appendChild(removeBtn);
+						previewContainer.appendChild(previewDiv);
+					};
+
+					reader.readAsDataURL(file);
+				});
+			}
+		}
+
+		//Image Removal Function
+				function removeImage(index)
+		{
+			// Remove from preview
+			const previews = document.getElementById('imagePreviews');
+			previews.removeChild(previews.children[index]);
+
+			// Remove from files array
+			window.imageFiles.splice(index, 1);
+
+			// Update the CORRECT file input
+			const dataTransfer = new DataTransfer();
+			window.imageFiles.forEach(file => dataTransfer.items.add(file));
+
+			// Target the image input specifically
+			document.getElementById('imgFiles').files = dataTransfer.files;
+		}
 	</script>
 }

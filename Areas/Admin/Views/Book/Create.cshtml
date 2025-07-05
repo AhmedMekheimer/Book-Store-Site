@@ -12,41 +12,50 @@
 		<form asp-action="Create" method="post" enctype="multipart/form-data">
 			<div class="form-group mb-3">
 				<label for="Name">Name</label>
-				<input type="text" id="Name" name="Name" class="form-control" placeholder="Enter book name" required>
+				<input type="text" id="Name" name="Book.Name" class="form-control" placeholder="Enter book name" value="@Model.Book.Name" required>
+				<span style="color:red" style="color:red" class="text-danger" asp-validation-for="Book.Name"></span>
 			</div>
 
 			<div class="form-group mb-3">
 				<label for="Price">Price</label>
-				<input type="number" id="Price" name="Price" class="form-control" placeholder="Enter book price" min="1"
+				<input type="number" id="Price" name="Book.Price" class="form-control" placeholder="Enter book price" min="1" value="@Model.Book.Price"
 					   step="0.01"
 					   required
 					   oninput="validity.valid||(value='');">
+				<span style="color:red" class="text-danger" asp-validation-for="Book.Price"></span>
 			</div>
 
 			<!--Images-->
 			<div class="form-group mb-3">
 				<label>Upload Images</label>
-				<input type="file" class="form-control" accept="image/*" id="files" name="files" multiple required>
-				<div id="imagePreviews" class="d-flex flex-wrap gap-2 mt-2"></div>
+				<input type="file" class="form-control" accept="image/*" id="files" name="files" multiple>
 			</div>
 
 			<!--Videos-->
 			<div class="form-group mb-3">
 				<label>Upload Videos</label>
-				<input type="file" class="form-control" accept="video/*" id="files" name="files" multiple required>
+				<input type="file" class="form-control" accept="video/*" id="files" name="files" multiple>
 			</div>
 
 			<div class="form-group mb-3">
 				<label for="AvailableCopies">No. Available Copies</label>
-				<input type="number" id="AvailableCopies" name="AvailableCopies" class="form-control" placeholder="Enter No. Available Copies" min="0" required oninput="validity.valid||(value='');">
+				<input type="number" id="AvailableCopies" name="Book.AvailableCopies" value="@Model.Book.AvailableCopies" class="form-control" placeholder="Enter No. Available Copies" min="0" required oninput="validity.valid||(value='');">
+				<span style="color:red" class="text-danger" asp-validation-for="Book.AvailableCopies"></span>
 			</div>
 
 			<div class="form-group mb-3">
 				<label for="CategoryId">Category</label>
-				<select name="categoryId" class="form-control" required>
+				<select name="Book.CategoryId" class="form-control" required>
 					@foreach (var cat in Model.Categories)
 					{
-						<option value="@cat.Id">@cat.Name</option>
+						if (Model.Book.CategoryId == cat.Id)
+						{
+							<option value="@cat.Id" selected>@cat.Name</option>
+						}
+						else
+						{
+							<option value="@cat.Id">@cat.Name</option>
+						}
 					}
 				</select>
 			</div>
@@ -54,9 +63,31 @@
 			<div class="form-group mb-3">
 				<label for="AuthorsIds">Select Authors:</label>
 				<select name="AuthorsIds" id="AuthorsIds" multiple class="multi-select" style="width:100%" required>
+					@foreach (var bookauth in Model.Book.Authors)
+					{
+						<option value="@bookauth.Id" selected>@bookauth.Name</option>
+					}
 					@foreach (var auth in Model.Authors)
 					{
-						<option value="@auth.Id">@auth.Name</option>
+						if (Model.Book.Authors.Count == 0)
+						{
+							<option value="@auth.Id">@auth.Name</option>
+						}
+						else
+						{
+							int counter = 0;
+							foreach (var bookauth in Model.Book.Authors)
+							{
+								if (bookauth.Id != auth.Id)
+								{
+									counter++;
+								}
+							}
+							if (counter == Model.Book.Authors.Count)
+							{
+								<option value="@auth.Id">@auth.Name</option>
+							}
+						}
 					}
 				</select>
 			</div>
@@ -64,9 +95,31 @@
 			<div class="form-group mb-3">
 				<label for="PublishersIds">Select Publishing Houses:</label>
 				<select name="PublishersIds" id="PublishersIds" multiple class="multi-select" style="width:100%" required>
-					@foreach (var pubs in Model.PublishingHouses)
+					@foreach (var bookpub in Model.Book.PublishingHouses)
 					{
-						<option value="@pubs.Id">@pubs.Name</option>
+						<option value="@bookpub.Id" selected>@bookpub.Name</option>
+					}
+					@foreach (var pub in Model.PublishingHouses)
+					{
+						if (Model.Book.PublishingHouses.Count == 0)
+						{
+							<option value="@pub.Id">@pub.Name</option>
+						}
+						else
+						{
+							int counter = 0;
+							foreach (var bookpub in Model.Book.PublishingHouses)
+							{
+								if (bookpub.Id != pub.Id)
+								{
+									counter++;
+								}
+							}
+							if (counter == Model.Book.PublishingHouses.Count)
+							{
+								<option value="@pub.Id">@pub.Name</option>
+							}
+						}
 					}
 				</select>
 			</div>

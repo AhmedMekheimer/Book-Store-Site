@@ -7,20 +7,23 @@
 	</div>
 
 	<div class="create-form-container">
-		<form asp-action="Create" method="post">
+		<form asp-action="Create" method="post" enctype="multipart/form-data">
 			<div class="form-group">
 				<label for="Name">Category Name</label>
 				<input type="text" id="Name" name="Name" class="form-control" placeholder="Enter category name" required>
 				<div class="form-hint">e.g. Fiction, Science, Romance</div>
 			</div>
 
-			<div class="form-group">
-				<label for="Picture">Image URL</label>
-				<input type="text" id="Picture" name="Picture" class="form-control" placeholder="https://example.com/image.jpg">
-				<div class="form-hint">Link to category image (optional)</div>
-				<div class="image-preview mt-2" id="imagePreview">
-					<div class="preview-text">Image preview will appear here</div>
-				</div>
+			<!--Images-->
+			<div class="form-group mb-3">
+				<label>Upload Image</label>
+				<input type="file" class="form-control" accept="image/*" id="files" name="files" multiple required>
+			</div>
+
+			<!--Videos-->
+			<div class="form-group mb-3">
+				<label>Upload Videos</label>
+				<input type="file" class="form-control" accept="video/*" id="files" name="files" multiple required>
 			</div>
 
 			<div class="form-group">
@@ -38,56 +41,11 @@
 				</button>
 			</div>
 		</form>
-
-		<div class="form-preview">
-			<h3>Preview</h3>
-			<div class="preview-card">
-				<div class="preview-icon" id="previewIcon">
-					<i class="fas fa-book"></i>
-				</div>
-				<div class="preview-details">
-					<h4 id="previewName">Category Name</h4>
-					<p id="previewDescription">Description will appear here</p>
-				</div>
-			</div>
-		</div>
 	</div>
 </div>
 @section Scripts {
 	<script>
-		document.addEventListener('DOMContentLoaded', function() {
-			// Live preview for category name
-			const nameInput = document.getElementById('Name');
-			const previewName = document.getElementById('previewName');
-
-			nameInput.addEventListener('input', function() {
-				previewName.textContent = this.value || 'Category Name';
-			});
-
-			// Live preview for description
-			const descInput = document.getElementById('Description');
-			const previewDesc = document.getElementById('previewDescription');
-
-			descInput.addEventListener('input', function() {
-				previewDesc.textContent = this.value || 'Description will appear here';
-			});
-
-			// Image URL preview
-			const imageInput = document.getElementById('Picture');
-			const imagePreview = document.getElementById('imagePreview');
-
-			imageInput.addEventListener('input', function() {
-				const url = this.value.trim();
-
-				if (url) {
-					imagePreview.innerHTML = `<img src="${url}" alt="Preview" onerror="this.style.display='none'; document.querySelector('.preview-text').style.display='block'">`;
-					imagePreview.querySelector('.preview-text').style.display = 'none';
-				} else {
-					imagePreview.innerHTML = '<div class="preview-text">Image preview will appear here</div>';
-				}
-			});
-
-			// Form validation
+			// Client-Side validation
 			const form = document.querySelector('form');
 
 			form.addEventListener('submit', function(e) {

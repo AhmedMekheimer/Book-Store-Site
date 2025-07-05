@@ -7,10 +7,22 @@
 	</div>
 
 	<div class="create-form-container">
-		<form asp-action="Create" method="post">
+		<form asp-action="Create" method="post" enctype="multipart/form-data">
 			<div class="form-group">
 				<label for="Name">Publishing House Name</label>
 				<input type="text" id="Name" name="Name" class="form-control" placeholder="Enter Publishing House name" required>
+			</div>
+
+			<!--Images-->
+			<div class="form-group mb-3">
+				<label>Upload Image</label>
+				<input type="file" class="form-control" accept="image/*" id="files" name="files" multiple required>
+			</div>
+
+			<!--Videos-->
+			<div class="form-group mb-3">
+				<label>Upload Videos</label>
+				<input type="file" class="form-control" accept="video/*" id="files" name="files" multiple required>
 			</div>
 
 			<div class="form-group">
@@ -29,39 +41,11 @@
 			</div>
 		</form>
 
-		<div class="form-preview">
-			<h3>Preview</h3>
-			<div class="preview-card">
-				<div class="preview-icon" id="previewIcon">
-					<i class="fas fa-book"></i>
-				</div>
-				<div class="preview-details">
-					<h4 id="previewName">Publishing House Name</h4>
-					<p id="previewDescription">Description will appear here</p>
-				</div>
-			</div>
-		</div>
 	</div>
 </div>
 @section Scripts {
 	<script>
 		document.addEventListener('DOMContentLoaded', function() {
-			// Live preview for PublishingHouse name
-			const nameInput = document.getElementById('Name');
-			const previewName = document.getElementById('previewName');
-
-			nameInput.addEventListener('input', function() {
-				previewName.textContent = this.value || 'PublishingHouse Name';
-			});
-
-			// Live preview for description
-			const descInput = document.getElementById('Description');
-			const previewDesc = document.getElementById('previewDescription');
-
-			descInput.addEventListener('input', function() {
-				previewDesc.textContent = this.value || 'Description will appear here';
-			});
-
 			// Form validation
 			const form = document.querySelector('form');
 

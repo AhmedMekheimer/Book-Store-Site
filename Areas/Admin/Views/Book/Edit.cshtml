@@ -11,20 +11,22 @@
 	<div class="create-form-container">
 		<form asp-action="Edit" method="post" enctype="multipart/form-data">
 			<div class="form-group">
-				<input type="hidden" name="id" value="@Model.Book.Id" />
+				<input type="hidden" name="Book.id" value="@Model.Book.Id" />
 			</div>
 
 			<div class="form-group">
 				<label for="Name">Name</label>
-				<input value="@Model.Book.Name" type="text" id="Name" name="Name" class="form-control" placeholder="Enter book name" required>
+				<input value="@Model.Book.Name" type="text" id="Name" name="Book.Name" class="form-control" placeholder="Enter book name" required>
+				<span style="color:red" style="color:red" class="text-danger" asp-validation-for="Book.Name"></span>
 			</div>
 
 			<div class="form-group">
 				<label for="Price">Price</label>
-				<input value="@Model.Book.Price" type="number" id="Price" name="Price" class="form-control" placeholder="Enter book price" min="1"
+				<input value="@Model.Book.Price" type="number" id="Price" name="Book.Price" class="form-control" placeholder="Enter book price" min="1"
 					   step="0.01"
 					   required
 					   oninput="validity.valid||(value='');">
+				<span style="color:red" class="text-danger" asp-validation-for="Book.Price"></span>
 			</div>
 
 			<!-- Existing Images -->
@@ -49,8 +51,7 @@
 			<!-- New Images -->
 			<div class="form-group mb-3">
 				<label>Upload New Images</label>
-				<input type="file" class="form-control" accept="image/*" id="files" name="files" multiple onchange="previewImages(event)" required>
-				<div id="imagePreviews" class="d-flex flex-wrap gap-2 mt-2"></div>
+				<input type="file" class="form-control" accept="image/*" id="files" name="files" multiple onchange="previewImages(event)">
 			</div>
 
 			<!-- Existing Videos -->
@@ -75,17 +76,18 @@
 			<!--New Videos-->
 			<div class="form-group mb-3">
 				<label>Upload New Videos</label>
-				<input type="file" class="form-control" accept="video/*" id="files" name="files" multiple required>
+				<input type="file" class="form-control" accept="video/*" id="files" name="files" multiple>
 			</div>
 
 			<div class="form-group mb-3">
 				<label for="AvailableCopies">No. Available Copies</label>
-				<input value="@Model.Book.AvailableCopies" type="number" id="AvailableCopies" name="AvailableCopies" class="form-control" placeholder="Enter No. Available Copies" min="0" required oninput="validity.valid||(value='');">
+				<input value="@Model.Book.AvailableCopies" type="number" id="AvailableCopies" name="Book.AvailableCopies" class="form-control" placeholder="Enter No. Available Copies" min="0" required oninput="validity.valid||(value='');">
+				<span style="color:red" class="text-danger" asp-validation-for="Book.AvailableCopies"></span>
 			</div>
 
 			<div class="form-group mb-3">
 				<label for="CategoryId">Category</label>
-				<select name="categoryId" class="form-control" required>
+				<select name="Book.CategoryId" class="form-control" required>
 					@foreach (var cat in Model.Categories)
 					{
 						if (Model.Book.CategoryId == cat.Id)
@@ -109,14 +111,18 @@
 					}
 					@foreach (var auth in Model.Authors)
 					{
+						int counter = 0;
 						foreach (var bookauth in Model.Book.Authors)
 						{
 							if (bookauth.Id != auth.Id)
 							{
-								<option value="@auth.Id">@auth.Name</option>
+								counter++;
 							}
 						}
-
+						if (counter == Model.Book.Authors.Count)
+						{
+							<option value="@auth.Id">@auth.Name</option>
+						}
 					}
 				</select>
 			</div>
@@ -130,12 +136,17 @@
 					}
 					@foreach (var pub in Model.PublishingHouses)
 					{
+						int counter = 0;
 						foreach (var bookpub in Model.Book.PublishingHouses)
 						{
 							if (bookpub.Id != pub.Id)
 							{
-								<option value="@pub.Id">@pub.Name</option>
+								counter++;
 							}
+						}
+						if (counter == Model.Book.PublishingHouses.Count)
+						{
+							<option value="@pub.Id">@pub.Name</option>
 						}
 					}
 				</select>
@@ -258,33 +269,10 @@
 		});
 		// DOMContentLoaded handler
 		document.addEventListener('DOMContentLoaded', function() {
-			// Fix: Use existing elements only
 			const nameInput = document.getElementById('Name');
-			const previewName = document.getElementById('previewName');
-			const imageInput = document.getElementById('Picture');
-			const imagePreview = document.getElementById('imagePreview');
 			const form = document.querySelector('form');
-			if (nameInput && previewName) {
-				nameInput.addEventListener('input', function() {
-					previewName.textContent = this.value || 'Book Name';
-				});
-			}
-			if (imageInput && imagePreview) {
-				imageInput.addEventListener('input', function() {
-					const url = this.value.trim();
-					const previewText = imagePreview.querySelector('.preview-text');
-					if (url) {
-						imagePreview.innerHTML = `<img src="${url}" alt="Preview"
-								style="max-width: 100%; max-height: 200px;"
-								onerror="this.style.display='none';
-								document.querySelector('.preview-text').style.display='block'">`;
-						if (previewText) previewText.style.display = 'none';
-					} else {
-						imagePreview.innerHTML = '<div class="preview-text">Image preview will appear here</div>';
-					}
-				});
-			}
-			if (form && nameInput) {
+			if (form && nameInput)
+			{
 				form.addEventListener('submit', function(e) {
 					if (!nameInput.value.trim()) {
 						e.preventDefault();
@@ -293,10 +281,12 @@
 					}
 				});
 			}
+
 			// Function to validate positive numbers
 			const setupPositiveNumberValidation = (elementId) => {
 				const input = document.getElementById(elementId);
-				if (input) {
+				if (input)
+				{
 					// Validate on change
 					input.addEventListener('change', function() {
 						if (parseFloat(this.value) < 0) {

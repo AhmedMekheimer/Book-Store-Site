@@ -1,4 +1,6 @@
-﻿<div class="admin-container">
+﻿@model Author
+
+<div class="admin-container">
 	<div class="page-header">
 		<h1 class="page-title">Create New Author</h1>
 		<a class="btn btn-back" asp-area="Admin" asp-controller="Author" asp-action="Index">
@@ -7,24 +9,27 @@
 	</div>
 
 	<div class="create-form-container">
-		<form asp-action="Create" method="post">
+		<form asp-action="Create" method="post" enctype="multipart/form-data">
 			<div class="form-group">
-				<label for="Name">Author Name</label>
-				<input type="text" id="Name" name="Name" class="form-control" placeholder="Enter author name" required>
+				<input type="hidden" name="id" value="@Model.Id" />
 			</div>
 
 			<div class="form-group">
-				<label for="Picture">Image URL</label>
-				<input type="text" id="Picture" name="Picture" class="form-control" placeholder="https://example.com/image.jpg">
-				<div class="form-hint">Link to author image (optional)</div>
-				<div class="image-preview mt-2" id="imagePreview">
-					<div class="preview-text">Image preview will appear here</div>
-				</div>
+				<label for="Name">Author Name</label>
+				<input type="text" id="Name" name="Name" value="@Model.Name" class="form-control" placeholder="Enter author name" required>
+				<span style="color:red" style="color:red" class="text-danger" asp-validation-for="Name"></span>
+			</div>
+
+			<!--Images-->
+			<div class="form-group mb-3">
+				<label>Upload Image</label>
+				<input type="file" class="form-control" accept="image/*" id="file" name="file" required>
 			</div>
 
 			<div class="form-group">
 				<label for="Bio">Bio</label>
-				<textarea id="Bio" name="Bio" class="form-control" rows="4" placeholder="Enter author bio"></textarea>
+				<textarea id="Bio" name="Bio" class="form-control" rows="4" placeholder="Enter author bio">@Model.Bio</textarea>
+				<span style="color:red" style="color:red" class="text-danger" asp-validation-for="Bio"></span>
 			</div>
 
 			<!-- Social Media Links -->
@@ -33,11 +38,18 @@
 				<div class="form-group">
 					<label>Add social media profiles</label>
 					<div id="socialMediasContainer">
-						<div class="input-group mb-2">
-							<input type="text" name="SocialMedias" class="form-control" placeholder="https://twitter.com/username" required>
-							<button type="button" class="btn btn-remove" disabled>
-							</button>
-						</div>
+						@for (int i = 0; i < Model.SocialMedias.Count; i++)
+						{
+							<div class="input-group mb-2">
+								<input type="text" name="SocialMedias" class="form-control"
+									   value="@Model.SocialMedias[i]"
+									   placeholder="https://example.com/username" required>
+								<button type="button" class="btn btn-remove"
+								@(Model.SocialMedias.Count == 1 ? "disabled" : "")>
+									<i class="fas fa-times"></i>
+								</button>
+							</div>
+						}
 					</div>
 					<button type="button" id="addSocialMedia" class="btn btn-add">
 						Add Another Link
@@ -55,19 +67,6 @@
 				</button>
 			</div>
 		</form>
-
-		<div class="form-preview">
-			<h3>Preview</h3>
-			<div class="preview-card">
-				<div class="preview-icon" id="previewIcon">
-					<i class="fas fa-book"></i>
-				</div>
-				<div class="preview-details">
-					<h4 id="previewName">Author Name</h4>
-					<p id="previewBio">Bio will appear here</p>
-				</div>
-			</div>
-		</div>
 	</div>
 </div>
 @section Scripts {
@@ -120,38 +119,8 @@
 					}
 				}
 			});
-			// Live preview for author name
-			const nameInput = document.getElementById('Name');
-			const previewName = document.getElementById('previewName');
 
-			nameInput.addEventListener('input', function() {
-				previewName.textContent = this.value || 'Author Name';
-			});
-
-			// Live preview for bio
-			const descInput = document.getElementById('Bio');
-			const previewDesc = document.getElementById('previewBio');
-
-			descInput.addEventListener('input', function() {
-				previewDesc.textContent = this.value || 'Bio will appear here';
-			});
-
-			// Image URL preview
-			const imageInput = document.getElementById('Picture');
-			const imagePreview = document.getElementById('imagePreview');
-
-			imageInput.addEventListener('input', function() {
-				const url = this.value.trim();
-
-				if (url) {
-					imagePreview.innerHTML = `<img src="${url}" alt="Preview" onerror="this.style.display='none'; document.querySelector('.preview-text').style.display='block'">`;
-					imagePreview.querySelector('.preview-text').style.display = 'none';
-				} else {
-					imagePreview.innerHTML = '<div class="preview-text">Image preview will appear here</div>';
-				}
-			});
-
-			// Form validation
+			// Client-Side Validation
 			const form = document.querySelector('form');
 
 			form.addEventListener('submit', function(e) {
