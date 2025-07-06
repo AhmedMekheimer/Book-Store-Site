@@ -23,6 +23,7 @@ namespace Online_Book_Store
             builder.Services.AddScoped<IRepository<BookFile>, Repository<BookFile>>();
             builder.Services.AddScoped<IRepository<AuthorFile>, Repository<AuthorFile>>();
             builder.Services.AddScoped<IRepository<CategoryFile>, Repository<CategoryFile>>();
+            builder.Services.AddScoped<IRepository<PublishingHouseFile>, Repository<PublishingHouseFile>>();
 
             // Configure request size limits
             builder.Services.Configure<IISServerOptions>(options =>

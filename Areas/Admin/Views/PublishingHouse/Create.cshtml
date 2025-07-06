@@ -1,4 +1,6 @@
-﻿<div class="admin-container">
+﻿@model PublishingHouse
+
+<div class="admin-container">
 	<div class="page-header">
 		<h1 class="page-title">Create New Publishing House</h1>
 		<a class="btn btn-back" asp-area="Admin" asp-controller="PublishingHouse" asp-action="Index">
@@ -10,7 +12,8 @@
 		<form asp-action="Create" method="post" enctype="multipart/form-data">
 			<div class="form-group">
 				<label for="Name">Publishing House Name</label>
-				<input type="text" id="Name" name="Name" class="form-control" placeholder="Enter Publishing House name" required>
+				<input value="@Model.Name" type="text" id="Name" name="Name" class="form-control" placeholder="Enter Publishing House name" required>
+				<span style="color:red" style="color:red" class="text-danger" asp-validation-for="Name"></span>
 			</div>
 
 			<!--Images-->
@@ -27,8 +30,9 @@
 
 			<div class="form-group">
 				<label for="Description">Description</label>
-				<textarea id="Description" name="Description" class="form-control" rows="4" placeholder="Enter Publishing House description"></textarea>
+				<textarea id="Description" name="Description" class="form-control" rows="4" placeholder="Enter Publishing House description">@Model.Description</textarea>
 				<div class="form-hint">Describe this Publishing House (optional)</div>
+				<span style="color:red" style="color:red" class="text-danger" asp-validation-for="Description"></span>
 			</div>
 
 			<div class="form-actions">
@@ -45,17 +49,5 @@
 </div>
 @section Scripts {
 	<script>
-		document.addEventListener('DOMContentLoaded', function() {
-			// Form validation
-			const form = document.querySelector('form');
-
-			form.addEventListener('submit', function(e) {
-				if (!nameInput.value.trim()) {
-					e.preventDefault();
-					nameInput.focus();
-					alert('Publishing House name is required');
-				}
-			});
-		});
 	</script>
 }

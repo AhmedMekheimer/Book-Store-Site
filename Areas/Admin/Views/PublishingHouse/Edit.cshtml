@@ -17,6 +17,7 @@
 			<div class="form-group">
 				<label for="Name">Publishing House Name</label>
 				<input type="text" id="Name" name="Name" class="form-control" placeholder="Enter Publishing House name" value="@Model.Name" required>
+				<span style="color:red" style="color:red" class="text-danger" asp-validation-for="Name"></span>
 			</div>
 
 			<!-- Existing Images -->
@@ -73,6 +74,7 @@
 				<label for="Description">Description</label>
 				<textarea id="Description" name="Description" class="form-control" rows="4" placeholder="Enter Publishing House description">@Model.Description</textarea>
 				<div class="form-hint">Describe this Publishing House (optional)</div>
+				<span style="color:red" style="color:red" class="text-danger" asp-validation-for="Description"></span>
 			</div>
 
 			<div class="form-actions">
