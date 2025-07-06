@@ -235,9 +235,7 @@
                 // Remove file from database
                 // Attach and mark for deletion
                 if(!(await _bfRepo.DeleteAsync(file)))
-                {
                     return NotFound();
-                }
             }
 
             // Handle Authors 

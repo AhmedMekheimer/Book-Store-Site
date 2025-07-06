@@ -17,7 +17,7 @@
 			<div class="form-group">
 				<label for="Name">Category Name</label>
 				<input type="text" id="Name" name="Name" class="form-control" placeholder="Enter category name" value="@Model.Name" required>
-				<div class="form-hint">e.g. Fiction, Science, Romance</div>
+				<span style="color:red" style="color:red" class="text-danger" asp-validation-for="Name"></span>
 			</div>
 
 			<!-- Existing Images -->
@@ -74,6 +74,7 @@
 				<label for="Description">Description</label>
 				<textarea id="Description" name="Description" class="form-control" rows="4" placeholder="Enter category description">@Model.Description</textarea>
 				<div class="form-hint">Describe this category (optional)</div>
+				<span style="color:red" style="color:red" class="text-danger" asp-validation-for="Description"></span>
 			</div>
 
 			<div class="form-actions">

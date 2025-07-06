@@ -14,12 +14,12 @@
 
         public async Task<IActionResult> Index()
         {
-            var Authors = await _authRepo.GetAsync(null,new Expression<Func<Author, object>>[] {a=>a.Books});
+            var Authors = await _authRepo.GetAsync(null, new Expression<Func<Author, object>>[] { a => a.Books });
             return View(Authors);
         }
         public IActionResult Create()
         {
-            
+
             return View(new Author());
         }
 
@@ -32,9 +32,7 @@
 
             ModelState.Remove("file");
             if (!ModelState.IsValid)
-            {
                 return View(author);
-            }
 
             string fileName;
             FileType fileType;
@@ -72,7 +70,7 @@
             ModelState.Remove("file");
             if (!ModelState.IsValid)
             {
-                if (await (_afRepo.GetOneAsync(a=>a.AuthorId==author.Id,null,false)) is AuthorFile authFile)
+                if (await (_afRepo.GetOneAsync(a => a.AuthorId == author.Id, null, false)) is AuthorFile authFile)
                 {
                     author.Files.Add(authFile);
                 }
@@ -81,7 +79,7 @@
 
             if (file is not null)
             {
-                foreach (var delFile in (await _afRepo.GetAsync(null,null,false)))
+                foreach (var delFile in (await _afRepo.GetAsync(null, null, false)))
                 {
                     // Delete physical file
                     var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\Files", delFile.Name);
@@ -114,7 +112,7 @@
         }
         public async Task<IActionResult> Delete(int id)
         {
-            if (await(_authRepo.GetOneAsync(a=>a.Id==id,new Expression<Func<Author, object>>[] {a=>a.Files})) is Author author)
+            if (await (_authRepo.GetOneAsync(a => a.Id == id, new Expression<Func<Author, object>>[] { a => a.Files })) is Author author)
             {
                 foreach (var file in author.Files)
                 {
