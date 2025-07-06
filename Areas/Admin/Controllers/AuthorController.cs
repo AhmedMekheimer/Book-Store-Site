@@ -1,32 +1,34 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Online_Book_Store.Models.File_Entities;
-
-namespace Online_Book_Store.Areas.Admin.Controllers
+﻿namespace Online_Book_Store.Areas.Admin.Controllers
 {
     [Area("Admin")]
     public class AuthorController : Controller
     {
-        private readonly ApplicationDbContext _context = new();
-        public IActionResult Index()
+        private readonly IRepository<Author> _authRepo;
+        private readonly IRepository<AuthorFile> _afRepo;
+
+        public AuthorController(IRepository<Author> authRepo, IRepository<AuthorFile> afRepo)
         {
-            var Authors = _context.Authors.Include(p => p.Books).ToList();
+            _afRepo = afRepo;
+            _authRepo = authRepo;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var Authors = await _authRepo.GetAsync(null,new Expression<Func<Author, object>>[] {a=>a.Books});
             return View(Authors);
         }
         public IActionResult Create()
         {
+            
             return View(new Author());
         }
 
         [HttpPost]
         [RequestSizeLimit(1_000_000_000)] // 1GB limit
-        public IActionResult Create(Author author, IFormFile file)
+        public async Task<IActionResult> Create(Author author, IFormFile file)
         {
-            var authors = _context.Authors;
             if (author is null)
-            {
                 return NotFound();
-            }
 
             ModelState.Remove("file");
             if (!ModelState.IsValid)
@@ -43,42 +45,34 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 Name = fileName,
                 FileType = fileType
             };
-            _context.AuthorFiles.Add(authorFile);
-            _context.SaveChanges();
+            await _afRepo.CreateAsync(authorFile);
 
             author.Files.Add(authorFile);
-            //_context.SaveChanges();
 
-            authors.Add(author);
-            _context.SaveChanges();
+            await _authRepo.CreateAsync(author);
 
             return RedirectToAction(nameof(Index));
         }
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var author = _context.Authors.Include(a => a.Files).SingleOrDefault(a => a.Id == id);
+            var author = await _authRepo.GetOneAsync(a => a.Id == id, new Expression<Func<Author, object>>[] { a => a.Files });
             if (author is not null)
-            {
                 return View(author);
-            }
+
             return NotFound();
         }
 
         [HttpPost]
         [RequestSizeLimit(1_000_000_000)] // 1GB limit
-        public IActionResult Edit(Author author, IFormFile file)
+        public async Task<IActionResult> Edit(Author author, IFormFile file)
         {
             if (author is null)
-            {
                 return NotFound();
-            }
-            var authorFilesList = _context.AuthorFiles.ToList();
-            var authorFiles = _context.AuthorFiles;
 
             ModelState.Remove("file");
             if (!ModelState.IsValid)
             {
-                if (authorFiles.SingleOrDefault(a => a.AuthorId == author.Id) is AuthorFile authFile)
+                if (await (_afRepo.GetOneAsync(a=>a.AuthorId==author.Id,null,false)) is AuthorFile authFile)
                 {
                     author.Files.Add(authFile);
                 }
@@ -87,7 +81,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
 
             if (file is not null)
             {
-                foreach (var delFile in authorFilesList)
+                foreach (var delFile in (await _afRepo.GetAsync(null,null,false)))
                 {
                     // Delete physical file
                     var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\Files", delFile.Name);
@@ -96,11 +90,8 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                         System.IO.File.Delete(filePath);
                     }
 
-                    // Remove from database
-                    // Attach and mark for deletion
-                    authorFiles.Attach(delFile);
-                    authorFiles.Remove(delFile);
-                    _context.SaveChanges();
+                    // Remove Author file from database
+                    await _afRepo.DeleteAsync(delFile);
                 }
 
                 string fileName;
@@ -112,25 +103,31 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                     Name = fileName,
                     FileType = fileType
                 };
-                authorFiles.Add(authorFile);
-                _context.SaveChanges();
+                await _afRepo.CreateAsync(authorFile);
 
                 author.Files.Add(authorFile);
             }
 
-            _context.Authors.Update(author);
-            _context.SaveChanges();
+            await _authRepo.UpdateAsync(author);
 
             return RedirectToAction(nameof(Index));
         }
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var authors = _context.Authors;
-            var author = authors.Find(id);
-            if (author is not null)
+            if (await(_authRepo.GetOneAsync(a=>a.Id==id,new Expression<Func<Author, object>>[] {a=>a.Files})) is Author author)
             {
-                authors.Remove(author);
-                _context.SaveChanges();
+                foreach (var file in author.Files)
+                {
+                    // Delete all files Physically
+                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\Files", file.Name);
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        System.IO.File.Delete(filePath);
+                    }
+                }
+
+                // Deleting Author along with his Files in DB
+                await _authRepo.DeleteAsync(author);
                 return RedirectToAction(nameof(Index));
             }
             return NotFound();

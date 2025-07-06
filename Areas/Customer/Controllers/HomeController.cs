@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿/*using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Online_Book_Store.Areas.Customer.Controllers
@@ -20,3 +20,4 @@ namespace Online_Book_Store.Areas.Customer.Controllers
         }
     }
 }
+*/

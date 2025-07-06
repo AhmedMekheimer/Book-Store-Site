@@ -3,8 +3,8 @@
     public class BookCatAuthPubsVM
     {
         public Book Book { get; set; } = null!;
-        public List<Category> Categories { get; set; } = null!;
-        public List<Author> Authors { get; set; } = null!;
-        public List<PublishingHouse> PublishingHouses { get; set; } = null!;
+        public IEnumerable<Category> Categories { get; set; } = null!;
+        public IEnumerable<Author> Authors { get; set; } = null!;
+        public IEnumerable<PublishingHouse> PublishingHouses { get; set; } = null!;
     }
 }

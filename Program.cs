@@ -11,6 +11,18 @@ namespace Online_Book_Store
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
+            // DB Configurations
+            builder.Services.AddDbContext<ApplicationDbContext>(
+                option => option.UseSqlServer("Data Source=.;Initial Catalog=Onilne Book Store; Integrated Security=True;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;")
+            );
+
+            builder.Services.AddScoped<IRepository<Book>,Repository<Book>>();
+            builder.Services.AddScoped<IRepository<Category>, Repository<Category>>();
+            builder.Services.AddScoped<IRepository<PublishingHouse>, Repository<PublishingHouse>>();
+            builder.Services.AddScoped<IRepository<Author>, Repository<Author>>();
+            builder.Services.AddScoped<IRepository<BookFile>, Repository<BookFile>>();
+            builder.Services.AddScoped<IRepository<AuthorFile>, Repository<AuthorFile>>();
+
             // Configure request size limits
             builder.Services.Configure<IISServerOptions>(options =>
             {

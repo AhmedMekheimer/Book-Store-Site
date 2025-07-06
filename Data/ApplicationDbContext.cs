@@ -6,6 +6,10 @@ namespace Online_Book_Store.Data
 {
     public class ApplicationDbContext : DbContext
     {
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+        {
+
+        }
         public DbSet<Book> Books { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Author> Authors { get; set; }
@@ -16,12 +20,6 @@ namespace Online_Book_Store.Data
         public DbSet<AuthorFile> AuthorFiles { get; set; }
         public DbSet<PublishingHouseFile> PublishingHouseFiles { get; set; }
         public DbSet<CategoryFile> CategoryFiles { get; set; }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            base.OnConfiguring(optionsBuilder);
-            optionsBuilder.UseSqlServer("Data Source=.;Initial Catalog=Onilne Book Store; Integrated Security=True;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;");
-        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

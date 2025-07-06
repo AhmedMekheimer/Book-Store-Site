@@ -1,27 +1,32 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using Online_Book_Store.Models;
-using Online_Book_Store.Models.File_Entities;
-using Online_Book_Store.ViewModels;
-using System;
-
-namespace Online_Book_Store.Areas.Admin.Controllers
+﻿namespace Online_Book_Store.Areas.Admin.Controllers
 {
     [Area("Admin")]
     public class BookController : Controller
     {
-        private readonly ApplicationDbContext _context = new();
-        public IActionResult Index()
+        private readonly IRepository<Book> _bookRepo;
+        private readonly IRepository<Category> _catRepo;
+        private readonly IRepository<Author> _authRepo;
+        private readonly IRepository<PublishingHouse> _pubRepo;
+        private readonly IRepository<BookFile> _bfRepo;
+        public BookController(IRepository<Book> bookRepo, IRepository<Category> catRepo, IRepository<Author> authRepo, IRepository<PublishingHouse> pubRepo, IRepository<BookFile> bfRepo)
         {
-            var books = _context.Books.Include(b => b.Authors).ToList();
+            _bookRepo = bookRepo;
+            _authRepo = authRepo;
+            _catRepo = catRepo;
+            _pubRepo = pubRepo;
+            _bfRepo = bfRepo;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var books = await _bookRepo.GetAsync(null, new Expression<Func<Book, object>>[] { b => b.Authors });
             return View(books);
         }
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            var categories = _context.Categories.ToList();
-            var authors = _context.Authors.ToList();
-            var pubs = _context.PublishingHouses.ToList();
+            var categories = await _catRepo.GetAsync();
+            var authors = await _authRepo.GetAsync();
+            var pubs = await _pubRepo.GetAsync();
             BookCatAuthPubsVM BookCatAuthPubsVM = new()
             {
                 Categories = categories,
@@ -33,40 +38,37 @@ namespace Online_Book_Store.Areas.Admin.Controllers
         }
         [HttpPost]
         [RequestSizeLimit(1_000_000_000)] // 1GB limit
-        public IActionResult Create(BookDataVM bookDataVM, List<IFormFile> files)
+        public async Task<IActionResult> Create(BookDataVM bookDataVM, List<IFormFile> files)
         {
             if (bookDataVM.Book is null)
                 return NotFound();
 
-            var authors = _context.Authors;
-            var pubs = _context.PublishingHouses;
+            var authors = _authRepo.GetAsync();
+            var pubs = _pubRepo.GetAsync();
 
             ModelState.Remove("files");
             if (!ModelState.IsValid)
             {
                 foreach (var authId in bookDataVM.AuthorsIds)
                 {
-                    if (authors.Find(authId) is Author auth)
+                    if ((await _authRepo.GetOneAsync(a => a.Id == authId)) is Author auth)
                     {
                         bookDataVM.Book.Authors.Add(auth);
                     }
                 }
                 foreach (var pubId in bookDataVM.PublishersIds)
                 {
-                    if (pubs.Find(pubId) is PublishingHouse pub)
+                    if ((await _pubRepo.GetOneAsync(p => p.Id == pubId)) is PublishingHouse pub)
                     {
                         bookDataVM.Book.PublishingHouses.Add(pub);
                     }
                 }
-                var categoriesList = _context.Categories.ToList();
-                var authorsList = _context.Authors.ToList();
-                var pubsList = _context.PublishingHouses.ToList();
 
                 BookCatAuthPubsVM BookCatAuthPubsVM = new()
                 {
-                    Categories = categoriesList,
-                    Authors = authorsList,
-                    PublishingHouses = pubsList,
+                    Categories = await _catRepo.GetAsync(),
+                    Authors = await _authRepo.GetAsync(),
+                    PublishingHouses = await _pubRepo.GetAsync(),
                     Book = bookDataVM.Book
                 };
                 return View(BookCatAuthPubsVM);
@@ -97,8 +99,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                         Name = fileName,
                         FileType = fileType
                     };
-                    _context.BookFiles.Add(bookFile);
-                    _context.SaveChanges();
+                    await _bfRepo.CreateAsync(bookFile);
 
                     //Save File to Book Table
                     book.Files.Add(bookFile);
@@ -108,42 +109,41 @@ namespace Online_Book_Store.Areas.Admin.Controllers
             }
             foreach (var authId in bookDataVM.AuthorsIds)
             {
-                if (authors.Find(authId) is Author auth)
+                if ((await _authRepo.GetOneAsync(a => a.Id == authId)) is Author auth)
                 {
                     book.Authors.Add(auth);
                 }
             }
             foreach (var pubId in bookDataVM.PublishersIds)
             {
-                if (pubs.Find(pubId) is PublishingHouse pub)
+                if ((await _pubRepo.GetOneAsync(p => p.Id == pubId)) is PublishingHouse pub)
                 {
                     book.PublishingHouses.Add(pub);
                 }
             }
-            _context.Books.Add(book);
-            _context.SaveChanges();
+            await _bookRepo.CreateAsync(book);
 
             return RedirectToAction(nameof(Index));
         }
 
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            Book? book = _context.Books.Include(b => b.Authors).Include(b => b.PublishingHouses).Include(b => b.Files).SingleOrDefault(e => e.Id == id);
+            Book? book = await _bookRepo.GetOneAsync(b => b.Id == id, new Expression<Func<Book, object>>[] {
+            b => b.Authors,
+            b => b.PublishingHouses,
+            b => b.Files
+            });
             if (book is null)
             {
                 return NotFound();
             }
             else
             {
-                var categories = _context.Categories.ToList();
-                var authors = _context.Authors.ToList();
-                var pubs = _context.PublishingHouses.ToList();
-
                 BookCatAuthPubsVM BookCatAuthPubsVM = new()
                 {
-                    Categories = categories,
-                    Authors = authors,
-                    PublishingHouses = pubs,
+                    Categories = await _catRepo.GetAsync(),
+                    Authors = await _authRepo.GetAsync(),
+                    PublishingHouses = await _pubRepo.GetAsync(),
                     Book = new Book()
                 };
 
@@ -154,23 +154,19 @@ namespace Online_Book_Store.Areas.Admin.Controllers
 
         [HttpPost]
         [RequestSizeLimit(1_000_000_000)] // 1GB limit
-        public IActionResult Edit(BookDataVM bookDataVM, List<IFormFile> files, List<int> ExistingFilesIds)
+        public async Task<IActionResult> Edit(BookDataVM bookDataVM, List<IFormFile> files, List<int> ExistingFilesIds)
         {
-            //Db Instances
-            var categories = _context.Categories;
-            var authors = _context.Authors;
-            var pubs = _context.PublishingHouses;
-            var books = _context.Books;
+            if (bookDataVM.Book is null)
+                return NotFound();
 
             ModelState.Remove("files");
             ModelState.Remove("ExistingFilesIds");
             //Invalid Server Side
             if (!ModelState.IsValid)
             {
-                if (bookDataVM.Book is null)
-                    return NotFound();
+                Book? book = await _bookRepo.GetOneAsync(e => e.Id == bookDataVM.Book.Id,
+                new Expression<Func<Book, object>>[] { b => b.Files }, false);
 
-                Book? book = books.Include(b => b.Files).AsNoTracking().SingleOrDefault(e => e.Id == bookDataVM.Book.Id);
                 if (book is null)
                 {
                     return NotFound();
@@ -178,14 +174,14 @@ namespace Online_Book_Store.Areas.Admin.Controllers
 
                 foreach (var authId in bookDataVM.AuthorsIds)
                 {
-                    if (authors.Find(authId) is Author auth)
+                    if ((await _authRepo.GetOneAsync(a => a.Id == authId)) is Author auth)
                     {
                         book.Authors.Add(auth);
                     }
                 }
                 foreach (var pubId in bookDataVM.PublishersIds)
                 {
-                    if (pubs.Find(pubId) is PublishingHouse pub)
+                    if ((await _pubRepo.GetOneAsync(p => p.Id == pubId)) is PublishingHouse pub)
                     {
                         book.PublishingHouses.Add(pub);
                     }
@@ -193,9 +189,9 @@ namespace Online_Book_Store.Areas.Admin.Controllers
 
                 BookCatAuthPubsVM BookCatAuthPubsVM = new()
                 {
-                    Categories = categories.ToList(),
-                    Authors = authors.ToList(),
-                    PublishingHouses = pubs.ToList(),
+                    Categories = await _catRepo.GetAsync(),
+                    Authors = await _authRepo.GetAsync(),
+                    PublishingHouses = await _pubRepo.GetAsync(),
                     Book = new Book()
                 };
                 book.Name = bookDataVM.Book.Name;
@@ -207,22 +203,20 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 return View(BookCatAuthPubsVM);
             }
 
-            var existingBook = books
-                .Include(b => b.Authors)
-                .Include(b => b.PublishingHouses)
-                .Include(b => b.Files)
-                .FirstOrDefault(b => b.Id == bookDataVM.Book!.Id);
+            Book? existingBook = await _bookRepo.GetOneAsync(b => b.Id == bookDataVM.Book.Id, new Expression<Func<Book, object>>[] {
+            b => b.Authors,
+            b => b.PublishingHouses,
+            b => b.Files
+            });
 
             if (existingBook == null) return NotFound();
 
-            //Primitive data types
-            existingBook.Name = bookDataVM.Book!.Name;
-            existingBook.Price = bookDataVM.Book.Price;
-            existingBook.AvailableCopies = bookDataVM.Book.AvailableCopies;
-            existingBook.CategoryId = bookDataVM.Book.CategoryId;
-
-            //Db Instance
-            var filesInDb = _context.BookFiles;
+            Book NewBook = new Book();
+            NewBook.Id = bookDataVM.Book.Id;
+            NewBook.Name= bookDataVM.Book.Name;
+            NewBook.Price = bookDataVM.Book.Price;
+            NewBook.AvailableCopies = bookDataVM.Book.AvailableCopies;
+            NewBook.CategoryId = bookDataVM.Book.CategoryId;
 
             // Handle existing files - remove files not in ExistingFilesIds
             var filesToDelete = existingBook.Files
@@ -238,30 +232,33 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                     System.IO.File.Delete(filePath);
                 }
 
-                // Remove from database
+                // Remove file from database
                 // Attach and mark for deletion
-                _context.BookFiles.Attach(file);
-                _context.BookFiles.Remove(file);
-                _context.SaveChanges();
+                if(!(await _bfRepo.DeleteAsync(file)))
+                {
+                    return NotFound();
+                }
             }
 
             // Handle Authors 
             existingBook.Authors.Clear();
+            NewBook.Authors = new List<Author>(); 
             foreach (var authId in bookDataVM.AuthorsIds)
             {
-                if (authors.Find(authId) is Author auth)
+                if ((await _authRepo.GetOneAsync(a => a.Id == authId)) is Author auth)
                 {
-                    existingBook.Authors.Add(auth);
+                    NewBook.Authors.Add(auth);
                 }
             }
 
             // Handle Publishing Houses 
             existingBook.PublishingHouses.Clear();
+            NewBook.PublishingHouses = new List<PublishingHouse>();
             foreach (var pubId in bookDataVM.PublishersIds)
             {
-                if (pubs.Find(pubId) is PublishingHouse pub)
+                if ((await _pubRepo.GetOneAsync(p => p.Id == pubId)) is PublishingHouse pub)
                 {
-                    existingBook.PublishingHouses.Add(pub);
+                    NewBook.PublishingHouses.Add(pub);
                 }
             }
 
@@ -281,26 +278,35 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                         Name = fileName,
                         FileType = fileType
                     };
-                    _context.BookFiles.Add(bookFile);
-                    _context.SaveChanges();
+                    await _bfRepo.CreateAsync(bookFile);
 
                     //Save File to Book Table
-                    existingBook.Files.Add(bookFile);
+                    NewBook.Files.Add(bookFile);
                 }
             }
+            //Remove Connection with Existing
+            _bookRepo.DetachEntity(existingBook);
 
-            _context.SaveChanges();
+            await _bookRepo.UpdateAsync(NewBook);
             return RedirectToAction(nameof(Index));
         }
 
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var books = _context.Books;
-            var book = books.Find(id);
-            if (book is not null)
+            if (await (_bookRepo.GetOneAsync(b => b.Id == id, new Expression<Func<Book, object>>[] { b => b.Files})) is Book book)
             {
-                books.Remove(book);
-                _context.SaveChanges();
+                foreach (var file in book.Files)
+                {
+                    // Delete all files Physically
+                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\Files", file.Name);
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        System.IO.File.Delete(filePath);
+                    }
+                }
+
+                // Delete Book from Db along with its Files
+                await _bookRepo.DeleteAsync(book);
                 return RedirectToAction(nameof(Index));
             }
             return NotFound();
