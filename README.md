@@ -6,11 +6,13 @@
   - Authors
   - Publishers
   - Categories
+    
+- Images/Videos Uploading
+- Models' Server-Side Validations
+- SOLID Principles applied on Models
 
 ## Under Development
-- Images/Videos Upload
-- Server-Side Validations
-- Repository Design Pattern - Single Responsibility Principle
+-Register & Login Actions
 
 ## Video Link Showcasing Progress
-[View Progress Video](https://drive.google.com/file/d/1lXKkgUlS_hkjIBLR1JAJZ-dHwmArwHA6/view?usp=sharing)
+[View Progress Video 'Task 15,16'](https://drive.google.com/file/d/1Pvtnlq2guENSFkWWQssQRNSFVU-8NNDg/view?usp=sharing)
