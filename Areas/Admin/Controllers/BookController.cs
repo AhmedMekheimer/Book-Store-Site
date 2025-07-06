@@ -43,9 +43,6 @@
             if (bookDataVM.Book is null)
                 return NotFound();
 
-            var authors = _authRepo.GetAsync();
-            var pubs = _pubRepo.GetAsync();
-
             ModelState.Remove("files");
             if (!ModelState.IsValid)
             {
