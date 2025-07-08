@@ -1,0 +1,43 @@
+﻿@model Online_Book_Store.ViewModels.SignInVM
+
+@{
+    ViewData["Title"] = "SignIn";
+}
+@section Scripts {
+    <partial name="_NotificationPartial.cshtml" />
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+<h1>SignIn</h1>
+<br />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="SignIn" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="UserNameOrEmail" class="control-label"></label>
+                <input asp-for="UserNameOrEmail" class="form-control" />
+                <span asp-validation-for="UserNameOrEmail" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Password" class="control-label"></label>
+                <input asp-for="Password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="RememberMe" /> @Html.DisplayNameFor(model => model.RememberMe)
+                </label>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-create">
+                    SignIn
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

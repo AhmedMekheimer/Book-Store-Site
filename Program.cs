@@ -1,4 +1,7 @@
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Online_Book_Store.Utility;
 
 namespace Online_Book_Store
 {
@@ -15,6 +18,15 @@ namespace Online_Book_Store
             builder.Services.AddDbContext<ApplicationDbContext>(
                 option => option.UseSqlServer("Data Source=.;Initial Catalog=Onilne Book Store; Integrated Security=True;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;")
             );
+
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(option =>
+            {
+                option.Password.RequiredLength = 4;
+            })
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
+
+            builder.Services.AddTransient<IEmailSender, EmailSender>();
 
             builder.Services.AddScoped<IRepository<Book>,Repository<Book>>();
             builder.Services.AddScoped<IRepository<Category>, Repository<Category>>();

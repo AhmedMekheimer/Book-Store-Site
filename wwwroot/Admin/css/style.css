@@ -64,11 +64,36 @@ main {
     padding: 2rem;
 }
 
+.text-danger {
+    color: #dc3545; /* Bootstrap's default danger color */
+    /* Alternatively, you could use: */
+    /* color: #ff0000; for pure red */
+    /* color: #d9534f; for softer red */
+}
+
+/* Optional additional styles for emphasis */
+.text-danger-bold {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.text-danger-italic {
+    color: #dc3545;
+    font-style: italic;
+}
+
+/* For a more subtle danger text */
+.text-danger-muted {
+    color: #dc3545;
+    opacity: 0.8;
+}
+
 .card-link {
     text-decoration: none;
     color: inherit;
     display: block;
 }
+
 
 
 .card-grid {
@@ -154,6 +179,13 @@ label {
     margin-bottom: 8px;
     font-weight: 500;
     color: #1d3557;
+}
+
+/* Fix for label visibility */
+.control-label {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 .form-control {
