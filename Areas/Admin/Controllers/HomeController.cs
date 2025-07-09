@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-
-namespace Online_Book_Store.Areas.Admin.Controllers
+﻿namespace Online_Book_Store.Areas.Admin.Controllers
 {
     [Area("Admin")]
     public class HomeController : Controller

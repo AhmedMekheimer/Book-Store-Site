@@ -34,7 +34,7 @@ namespace Online_Book_Store.Migrations
 
                     b.HasIndex("BooksId");
 
-                    b.ToTable("AuthorBook");
+                    b.ToTable("AuthorBook", (string)null);
                 });
 
             modelBuilder.Entity("BookPublishingHouse", b =>
@@ -49,7 +49,7 @@ namespace Online_Book_Store.Migrations
 
                     b.HasIndex("PublishingHousesId");
 
-                    b.ToTable("BookPublishingHouse");
+                    b.ToTable("BookPublishingHouse", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -283,7 +283,7 @@ namespace Online_Book_Store.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Authors");
+                    b.ToTable("Authors", (string)null);
                 });
 
             modelBuilder.Entity("Online_Book_Store.Models.AuthorFile", b =>
@@ -308,7 +308,7 @@ namespace Online_Book_Store.Migrations
 
                     b.HasIndex("AuthorId");
 
-                    b.ToTable("AuthorFiles");
+                    b.ToTable("AuthorFiles", (string)null);
                 });
 
             modelBuilder.Entity("Online_Book_Store.Models.Book", b =>
@@ -336,7 +336,7 @@ namespace Online_Book_Store.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Books");
+                    b.ToTable("Books", (string)null);
                 });
 
             modelBuilder.Entity("Online_Book_Store.Models.BookFile", b =>
@@ -361,7 +361,7 @@ namespace Online_Book_Store.Migrations
 
                     b.HasIndex("BookId");
 
-                    b.ToTable("BookFiles");
+                    b.ToTable("BookFiles", (string)null);
                 });
 
             modelBuilder.Entity("Online_Book_Store.Models.Category", b =>
@@ -382,7 +382,7 @@ namespace Online_Book_Store.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("Online_Book_Store.Models.CategoryFile", b =>
@@ -407,7 +407,7 @@ namespace Online_Book_Store.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("CategoryFiles");
+                    b.ToTable("CategoryFiles", (string)null);
                 });
 
             modelBuilder.Entity("Online_Book_Store.Models.PublishingHouse", b =>
@@ -428,7 +428,7 @@ namespace Online_Book_Store.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PublishingHouses");
+                    b.ToTable("PublishingHouses", (string)null);
                 });
 
             modelBuilder.Entity("Online_Book_Store.Models.PublishingHouseFile", b =>
@@ -453,7 +453,7 @@ namespace Online_Book_Store.Migrations
 
                     b.HasIndex("PublishingHouseId");
 
-                    b.ToTable("PublishingHouseFiles");
+                    b.ToTable("PublishingHouseFiles", (string)null);
                 });
 
             modelBuilder.Entity("AuthorBook", b =>

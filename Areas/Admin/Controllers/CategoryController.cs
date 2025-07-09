@@ -1,10 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Online_Book_Store.Models.File_Entities;
-using Online_Book_Store.Models;
-using Online_Book_Store.ViewModels;
-
-namespace Online_Book_Store.Areas.Admin.Controllers
+﻿namespace Online_Book_Store.Areas.Admin.Controllers
 {
     [Area("Admin")]
     public class CategoryController : Controller

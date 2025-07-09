@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Online_Book_Store.ViewModels
+namespace Online_Book_Store.ViewModels.Identity
 {
     public class SignInVM
     {

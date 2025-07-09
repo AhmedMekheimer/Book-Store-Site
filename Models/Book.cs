@@ -15,6 +15,7 @@ namespace Online_Book_Store.Models
         [Range(0, 1_000)]
         public int AvailableCopies { get; set; }
         public int CategoryId { get; set; }
+        public Category Category { get; set; } = null!;
         [ValidateNever]
         public List<Author> Authors { get; set; } = new List<Author>();
         [ValidateNever]

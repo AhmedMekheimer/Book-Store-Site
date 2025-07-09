@@ -6,6 +6,7 @@
 	<title>Chapter & Verse | Bookstore</title>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 	<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+	<link href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
 	<link rel="stylesheet" href="~/Customer/css/style.css">
 </head>
 <body>
@@ -13,7 +14,7 @@
 	<nav class="navbar">
 		<div class="container">
 			<div class="nav-left">
-				<a href="#" class="logo">Chapter & Verse</a>
+				<a href="~/" class="logo">Chapter & Verse</a>
 				<div class="nav-links">
 					<a href="#" class="icon">🏷️Categories</a>
 					<a href="#" class="icon">🏢Publishing Houses</a>
@@ -30,6 +31,7 @@
 	</div>
 
 	<!-- Footer -->
+	<br />
 	<footer>
 		<div class="copyright">
 			<p>&copy; 2025 Chapter & Verse Bookstore. All rights reserved.</p>
@@ -38,6 +40,7 @@
 
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script src="~/Customer/js/script.js"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 	@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

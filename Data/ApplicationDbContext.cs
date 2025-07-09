@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Runtime.ConstrainedExecution;
 using Microsoft.EntityFrameworkCore;
-using Online_Book_Store.ViewModels;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Online_Book_Store.ViewModels.Identity;
 
 namespace Online_Book_Store.Data
 {
@@ -26,6 +26,13 @@ namespace Online_Book_Store.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Book>()
+                .HasOne(b => b.Category)
+                .WithMany(c => c.Books)
+                .HasForeignKey(b => b.CategoryId)
+                .OnDelete(DeleteBehavior.Cascade);
+
 
             // Configure relationships with cascade delete
             modelBuilder.Entity<BookFile>()
@@ -52,7 +59,5 @@ namespace Online_Book_Store.Data
                 .HasForeignKey(af => af.PublishingHouseId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
-        public DbSet<Online_Book_Store.ViewModels.SignVM> RegisterVM { get; set; } = default!;
-        public DbSet<Online_Book_Store.ViewModels.SignInVM> SignInVM { get; set; } = default!;
     }
 }

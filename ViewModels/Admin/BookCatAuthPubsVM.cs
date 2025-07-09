@@ -1,4 +1,4 @@
-﻿namespace Online_Book_Store.ViewModels
+﻿namespace Online_Book_Store.ViewModels.Admin
 {
     public class BookCatAuthPubsVM
     {

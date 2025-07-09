@@ -1,22 +1,26 @@
-﻿@model IQueryable<Book>
+﻿@using Online_Book_Store.ViewModels.Customer
+@model BooksSearchVM
+
+@section Scripts {
+	<partial name="_NotificationPartial.cshtml" />
+}
 
 <div class="container">
-
 	<!-- Books Section -->
-	<section class="Books">
+	<div class="Books">
 		<div class="section-header">
 			<h2 class="icon">Featured Books 📚</h2>
 
 			<!-- Search Bar -->
 			<div class="search-container">
-				<form action="Index">
-					@if (ViewData["Search"] is not null)
+				<form action="">
+					@if (Model.Search is not null)
 					{
-						<input value="@ViewData["Search"]" type="text" placeholder="Search books..." name="search" class="search-input">
+						<input value="@Model.Search" type="text" placeholder="Search books..." asp-for="Search" class="search-input">
 					}
 					else
 					{
-						<input type="text" placeholder="Search books..." name="search" class="search-input">
+						<input type="text" placeholder="Search books..." asp-for="Search" class="search-input">
 					}
 					<button type="submit" class="search-button">
 						<i class="fas fa-search"></i>
@@ -25,31 +29,74 @@
 			</div>
 		</div>
 		<div class="books-grid">
-			@foreach (var book in Model)
+			@foreach (var book in Model.Books)
 			{
-				<div class="book-card">
-					<div class="book-cover"></div>
-					<div class="book-details">
-						<h3>@book.Name</h3>
-						@foreach (var auth in book.Authors)
-						{
-							<p class="author"><i class="fas fa-user-pen"></i> @auth.Name</p>
-						}
-						<div class="price-row">
-							<span class="price">@book.Price</span>
-							@if (book.AvailableCopies == 0)
+				<a href="/Customer/Home/BookDetails/?id=@book.Id" style="text-decoration:none; color:inherit;">
+					<div class="book-card">
+						<div class="book-cover"></div>
+						<div class="book-details">
+							<h3>@book.Name</h3>
+							<span class="category-link" href="@Url.Action("Index", new { PageId=2, Search=Model.Search })" onclick="event.stopPropagation(); window.location='@Url.Action("Index", new { PageId=2, Search=Model.Search })';" style="cursor:pointer; color:#007bff; text-decoration:none;">
+								🏷️@book.Category.Name
+							</span>
+							@foreach (var auth in book.Authors)
 							{
-								<span class="availability unavailable"><i class="fas fa-times-circle"></i> Out of Stock</span>
+								<span class="author-link" onclick="event.stopPropagation(); window.location='@Url.Action("Index", new { PageId=2, Search=Model.Search })';" style="cursor:pointer; color:#007bff; text-decoration:none;">
+									<i class="fas fa-user-pen"></i> @auth.Name
+								</span>
 							}
-							else
-							{
-								<span class="availability available"><i class="fas fa-check-circle"></i> In Stock</span>
-							}
+							<div class="price-row">
+								<span class="price">@book.Price</span>
+								@if (book.AvailableCopies == 0)
+								{
+									<span class="availability unavailable"><i class="fas fa-times-circle"></i> Out of Stock</span>
+								}
+								else
+								{
+									<span class="availability available"><i class="fas fa-check-circle"></i> In Stock</span>
+								}
+							</div>
 						</div>
 					</div>
-				</div>
+				</a>
 			}
 		</div>
-	</section>
+	</div>
+	<div class="row my-3">
+		<div class="d-flex justify-content-center">
+			<nav aria-label="Page navigation example">
+				<ul class="pagination">
+					@if (!(Model.PageId == 1))
+					{
+						<li class="page-item">
+							<a class="page-link" href="@Url.Action("Index", new {
+								PageId=Model.PageId-1,
+								Search=Model.Search
+                        })">Previous</a>
+						</li>
+					}
+					@for (int i = 1; i <= Model.NoPages; i++)
+					{
+						<li class="page-item @(i == Model.PageId ? "active" : "")">
+							<a class="page-link @(i == Model.PageId ? "active" : "")" href="@Url.Action("Index", new {
+								PageId=i,
+								Search=Model.Search
+                        })">@i</a>
+						</li>
+					}
+					@if (!(Model.NoPages == Model.PageId))
+					{
+						<li class="page-item">
+							<a class="page-link" href="@Url.Action("Index", new {
+								PageId=Model.PageId+1,
+								Search=Model.Search
+                        })">Next</a>
+						</li>
+					}
+
+				</ul>
+			</nav>
+		</div>
+	</div>
 </div>
 

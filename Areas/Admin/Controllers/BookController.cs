@@ -1,4 +1,6 @@
-﻿namespace Online_Book_Store.Areas.Admin.Controllers
+﻿using Online_Book_Store.ViewModels.Admin;
+
+namespace Online_Book_Store.Areas.Admin.Controllers
 {
     [Area("Admin")]
     public class BookController : Controller
