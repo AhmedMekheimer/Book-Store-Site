@@ -1,0 +1,49 @@
+﻿@model Online_Book_Store.ViewModels.Identity.SignInVM
+
+@{
+    ViewData["Title"] = "EmailConfirmation";
+}
+@section Scripts {
+    <partial name="_NotificationPartial.cshtml" />
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+
+<h1>Email Confirmation</h1>
+<br />
+<div class="row">
+    <div class="col-md-">
+        <form asp-action="EmailConfirmation">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="UserNameOrEmail" class="control-label"></label>
+                <input asp-for="UserNameOrEmail" class="form-control" />
+                <span asp-validation-for="UserNameOrEmail" class="text-danger"></span>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-create">
+                    Send Confirmation Email
+                </button>
+            </div>
+        </form>
+        <br />
+        <div>
+            Already Have An Account ?
+            <a asp-area="Identity" asp-controller="Account" asp-action="SignIn">
+                <button type="submit" class="btn btn-create">
+                    Sign In
+                </button>
+            </a>
+        </div>
+        <br />
+        <div>
+            Don't' Have An Account ?
+            <a asp-area="Identity" asp-controller="Account" asp-action="Register">
+                <button type="submit" class="btn btn-create">
+                    Register
+                </button>
+            </a>
+        </div>
+    </div>
+</div>

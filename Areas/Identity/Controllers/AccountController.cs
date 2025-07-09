@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using Online_Book_Store.Models;
 using Online_Book_Store.ViewModels.Identity;
 
 namespace Online_Book_Store.Areas.Identity.Controllers
@@ -11,6 +13,18 @@ namespace Online_Book_Store.Areas.Identity.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailSender _emailSender;
         private readonly SignInManager<ApplicationUser> _signInManager;
+
+        private async Task SendConfirmationEmail(ApplicationUser applicationUser)
+        {
+            //Generating Email Conf. Token 
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(applicationUser);
+
+            //Link sent to Email, to be redirected to 'action' that verifies token 
+            var link = Url.Action(nameof(ConfirmEmail), "Account", new { userId = applicationUser.Id, token = token, area = "Identity" }, Request.Scheme);
+
+            //Sending Confirmation Email to New Account
+            await _emailSender.SendEmailAsync(applicationUser.Email!, "Account Confirmation", $"<h1>Confirm Your Account By Clicking <a href='{link}'>here</a></h1>");
+        }
 
         public AccountController(UserManager<ApplicationUser> userManager, IEmailSender emailSender, SignInManager<ApplicationUser> signInManager)
         {
@@ -25,10 +39,22 @@ namespace Online_Book_Store.Areas.Identity.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register(SignVM registerVM)
+        public async Task<IActionResult> Register(RegisterVM registerVM)
         {
             if (!ModelState.IsValid)
                 return View(registerVM);
+
+            // Check if username or email already exists
+            var userExists = await _userManager.FindByNameAsync(registerVM.UserName);
+            var emailExists = await _userManager.FindByEmailAsync(registerVM.Email);
+            if (emailExists != null || userExists != null)
+            {
+                if (userExists != null)
+                    ModelState.AddModelError("UserName", "Username is already taken.");
+                if (emailExists != null)
+                    ModelState.AddModelError("Email", "Email is already in use.");
+                return View(registerVM);
+            }
 
             ApplicationUser applicationUser = new()
             {
@@ -47,16 +73,7 @@ namespace Online_Book_Store.Areas.Identity.Controllers
                 // Success msg
                 TempData["success-notification"] = "User added Successfully, Check your account for the Confirmation Email";
 
-                //Send Confirmation Email (Authentication)
-
-                //Generating Email Conf. Token 
-                var token = await _userManager.GenerateEmailConfirmationTokenAsync(applicationUser);
-
-                //Link sent to Email, to be redirected to 'action' that verifies token 
-                var link = Url.Action(nameof(ConfirmEmail), "Account", new { userId = applicationUser.Id, token = token, area = "Identity" }, Request.Scheme);
-
-                //Sending Confirmation Email to New Account
-                await _emailSender.SendEmailAsync(applicationUser.Email, "Account Confirmation", $"<h1>Confirm Your Account By Clicking <a href='{link}'>here</a></h1>");
+                await SendConfirmationEmail(applicationUser);
 
                 return RedirectToAction("Register", "Account", new { area = "Identity" });
             }
@@ -68,6 +85,7 @@ namespace Online_Book_Store.Areas.Identity.Controllers
             return View(registerVM);
         }
 
+        //The Action loaded when LINK is clicked
         public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -85,6 +103,34 @@ namespace Online_Book_Store.Areas.Identity.Controllers
             }
             return NotFound();
         }
+        public IActionResult EmailConfirmation()
+        {
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> EmailConfirmation(SignInVM signInVM)
+        {
+            ModelState.Remove("Password");
+            if (!ModelState.IsValid)
+                return View(signInVM);
+
+            var user = await _userManager.FindByNameAsync(signInVM.UserNameOrEmail) ??
+                       await _userManager.FindByEmailAsync(signInVM.UserNameOrEmail);
+
+            if (user!=null)
+            {
+                if(!user.EmailConfirmed)
+                {
+                    TempData["success-notification"] = "The Confirmation Email has been Sent";
+                    await SendConfirmationEmail(user);
+                }
+                else
+                    TempData["error-notification"] = "Your Email is Confirmed";
+                return RedirectToAction("SignIn", "Account", new { area = "Identity" });
+            }
+            TempData["error-notification"] = "Email or UserName Invalid";
+            return View(signInVM);
+        }
         public IActionResult SignIn()
         {
             return View();
@@ -100,24 +146,21 @@ namespace Online_Book_Store.Areas.Identity.Controllers
 
             if (user != null)
             {
-                var result = await _signInManager.PasswordSignInAsync(
-                                                signInVM.UserNameOrEmail,
-                                                signInVM.Password,
-                                                signInVM.RememberMe,
-                                                lockoutOnFailure: false);
+                var result = await _userManager.CheckPasswordAsync(user, signInVM.Password);
 
-                if (result.Succeeded)
+                if (result)
                 {
                     if (!user.EmailConfirmed)
                     {
-                        TempData["error-notification"] = "Confirm Your Email";
+                        TempData["error-notification"] = "Confirm Your Email, The Confirmation Email has been Sent";
+                        await SendConfirmationEmail(user);
                         return View(signInVM);
                     }
 
                     TempData["success-notification"] = "Signed In Successfully";
-                    return RedirectToAction("SignIn", "Account", new { area = "Identity" });
+                    return View();
                 }
-                if (result.IsLockedOut)
+                if (!user.LockoutEnabled)
                 {
                     TempData["error-notification"] = $"You are locked out until {user.LockoutEnd}";
                     return View(signInVM);

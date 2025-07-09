@@ -1,5 +1,5 @@
 ﻿@using Online_Book_Store.ViewModels.Identity
-@model SignVM
+@model RegisterVM
 
 @{
 	ViewData["Title"] = "Register";
@@ -10,7 +10,6 @@
 		await Html.RenderPartialAsync("_ValidationScriptsPartial");
 	}
 }
-
 <h1>Register New Account</h1>
 <br />
 <div class="row">
@@ -65,5 +64,23 @@
 				</button>
 			</div>
 		</form>
+		<br />
+		<div>
+			Already Have An Account ?
+			<a asp-area="Identity" asp-controller="Account" asp-action="SignIn">
+				<button type="submit" class="btn btn-create">
+					Sign In
+				</button>
+			</a>
+		</div>
+		<br />
+		<div>
+			Resend Confirmation Email ?
+			<a asp-area="Identity" asp-controller="Account" asp-action="EmailConfirmation">
+				<button type="submit" class="btn btn-create">
+					Activate your Account
+				</button>
+			</a>
+		</div>
 	</div>
 </div>

@@ -40,5 +40,23 @@
                 </button>
             </div>
         </form>
+        <br />
+        <div>
+            Don't' Have An Account ?
+            <a asp-area="Identity" asp-controller="Account" asp-action="Register">
+                <button type="submit" class="btn btn-create">
+                    Register
+                </button>
+            </a>
+        </div>
+        <br />
+        <div>
+            Resend Confirmation Email ?
+            <a asp-area="Identity" asp-controller="Account" asp-action="EmailConfirmation">
+                <button type="submit" class="btn btn-create">
+                    Activate your Account
+                </button>
+            </a>
+        </div>
     </div>
 </div>

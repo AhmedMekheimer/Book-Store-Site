@@ -33,6 +33,14 @@ namespace Online_Book_Store.Data
                 .HasForeignKey(b => b.CategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<ApplicationUser>()
+                .HasIndex(u => u.UserName)
+                .IsUnique();
+
+            modelBuilder.Entity<ApplicationUser>()
+                .HasIndex(u => u.Email)
+                .IsUnique();
+
 
             // Configure relationships with cascade delete
             modelBuilder.Entity<BookFile>()
@@ -59,5 +67,6 @@ namespace Online_Book_Store.Data
                 .HasForeignKey(af => af.PublishingHouseId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
+        public DbSet<Online_Book_Store.ViewModels.Identity.SignInVM> SignInVM { get; set; } = default!;
     }
 }
