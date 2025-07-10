@@ -27,6 +27,7 @@ namespace Online_Book_Store
                 .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
+            builder.Services.AddScoped<IDbInitializer, DbInitializer>();
 
             builder.Services.AddTransient<IEmailSender, EmailSender>();
 
@@ -79,7 +80,11 @@ namespace Online_Book_Store
                 pattern: "{area=Customer}/{controller=Home}/{action=Index}/{search?}")
                 .WithStaticAssets();
 
-
+            using (var scope = app.Services.CreateScope())
+            {
+                var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
+                dbInitializer.Initialize();
+            }
 
             app.Run();
         }
