@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Online_Book_Store.Utility;
+using Online_Book_Store.Utility.DbInitializer;
 
 namespace Online_Book_Store
 {
@@ -26,6 +27,7 @@ namespace Online_Book_Store
                 .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
+
             builder.Services.AddTransient<IEmailSender, EmailSender>();
 
             builder.Services.AddScoped<IRepository<Book>,Repository<Book>>();
@@ -36,6 +38,7 @@ namespace Online_Book_Store
             builder.Services.AddScoped<IRepository<AuthorFile>, Repository<AuthorFile>>();
             builder.Services.AddScoped<IRepository<CategoryFile>, Repository<CategoryFile>>();
             builder.Services.AddScoped<IRepository<PublishingHouseFile>, Repository<PublishingHouseFile>>();
+            builder.Services.AddScoped<IRepository<ApplicationUserOTP>, Repository<ApplicationUserOTP>>();
 
             // Configure request size limits
             builder.Services.Configure<IISServerOptions>(options =>
@@ -75,6 +78,8 @@ namespace Online_Book_Store
                 name: "default",
                 pattern: "{area=Customer}/{controller=Home}/{action=Index}/{search?}")
                 .WithStaticAssets();
+
+
 
             app.Run();
         }

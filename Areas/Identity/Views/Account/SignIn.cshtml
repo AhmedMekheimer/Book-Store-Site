@@ -10,7 +10,7 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 }
-<h1>SignIn</h1>
+<h1>Sign In</h1>
 <br />
 <div class="row">
     <div class="col-md-6">
@@ -42,20 +42,20 @@
         </form>
         <br />
         <div>
-            Don't' Have An Account ?
             <a asp-area="Identity" asp-controller="Account" asp-action="Register">
-                <button type="submit" class="btn btn-create">
-                    Register
-                </button>
+                Don't Have An Account ?
             </a>
         </div>
         <br />
         <div>
-            Resend Confirmation Email ?
             <a asp-area="Identity" asp-controller="Account" asp-action="EmailConfirmation">
-                <button type="submit" class="btn btn-create">
-                    Activate your Account
-                </button>
+                Resend Confirmation Email
+            </a>
+        </div>
+        <br />
+        <div>
+            <a asp-area="Identity" asp-controller="Account" asp-action="ForgetPassword">
+                Forgotton Passsword
             </a>
         </div>
     </div>

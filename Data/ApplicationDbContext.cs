@@ -16,6 +16,7 @@ namespace Online_Book_Store.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<Author> Authors { get; set; }
         public DbSet<PublishingHouse> PublishingHouses { get; set; }
+        public DbSet<ApplicationUserOTP> ApplicationUserOTPs { get; set; }
 
         // File tables
         public DbSet<BookFile> BookFiles { get; set; }
@@ -67,6 +68,5 @@ namespace Online_Book_Store.Data
                 .HasForeignKey(af => af.PublishingHouseId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
-        public DbSet<Online_Book_Store.ViewModels.Identity.SignInVM> SignInVM { get; set; } = default!;
     }
 }
