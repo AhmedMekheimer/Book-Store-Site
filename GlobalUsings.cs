@@ -10,3 +10,8 @@ global using System.Linq.Expressions;
 global using Online_Book_Store.Repositories;
 global using Microsoft.Data.SqlClient;
 global using System;
+global using Microsoft.AspNetCore.Identity;
+global using Microsoft.AspNetCore.Identity.UI.Services;
+global using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
+global using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+global using Online_Book_Store.ViewModels.Identity;

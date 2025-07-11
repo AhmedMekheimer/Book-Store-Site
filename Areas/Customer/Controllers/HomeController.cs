@@ -7,6 +7,7 @@ namespace Online_Book_Store.Areas.Customer.Controllers
     {
         private readonly IRepository<Book> _bookRepo;
         private readonly IRepository<Category> _catRepo;
+
         public HomeController(IRepository<Book> bookRepo, IRepository<Category> catRepo)
         {
             _bookRepo = bookRepo;

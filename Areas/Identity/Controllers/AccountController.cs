@@ -1,9 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
-using Online_Book_Store.Models;
-using Online_Book_Store.ViewModels.Identity;
+﻿using NetTopologySuite.Algorithm;
 
 namespace Online_Book_Store.Areas.Identity.Controllers
 {
@@ -76,7 +71,7 @@ namespace Online_Book_Store.Areas.Identity.Controllers
 
                 await SendConfirmationEmail(applicationUser);
 
-                return RedirectToAction("Register", "Account", new { area = "Identity" });
+                return RedirectToAction("SignIn", "Account", new { area = "Identity" });
             }
 
             foreach (var item in result.Errors)
@@ -157,8 +152,9 @@ namespace Online_Book_Store.Areas.Identity.Controllers
                         return View(signInVM);
                     }
 
+                    await _signInManager.SignInAsync(user, signInVM.RememberMe);
                     TempData["success-notification"] = "Signed In Successfully";
-                    return View();
+                    return RedirectToAction("Index", "Home", new { area = "Customer" });
                 }
                 if (!user.LockoutEnabled)
                 {
@@ -180,7 +176,7 @@ namespace Online_Book_Store.Areas.Identity.Controllers
         {
             await _signInManager.SignOutAsync();
             TempData["success-notification"] = $"Signed Out Successfully";
-            return RedirectToAction("SignIn", "Account", new { area = "Identity" });
+            return RedirectToAction("Index", "Home", new { area = "Customer" });
         }
         public IActionResult ForgetPassword()
         {
@@ -274,6 +270,65 @@ namespace Online_Book_Store.Areas.Identity.Controllers
                     TempData["error-notification"] = "OTP is Invalid or Expired";
 
                 return View(resetPasswordVM);
+            }
+            return NotFound();
+        }
+
+        public async Task<IActionResult> ProfileEdit()
+        {
+            // Get current user instead of using URL parameter
+            var currentUser = await _userManager.GetUserAsync(User);
+
+            if (currentUser == null) return NotFound();
+
+            return View(new ProfileEditVM()
+            {
+                UserId = currentUser.Id,
+                UserName = currentUser.UserName!,
+                FirstName = currentUser.FirstName,
+                LastName = currentUser.LastName,
+                Address = currentUser.Address
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ProfileEdit(ProfileEditVM profileEditVM)
+        {
+            var currentUser = await _userManager.GetUserAsync(User);
+
+            // Verify user can only edit their own profile
+            if (currentUser == null || currentUser.Id != profileEditVM.UserId)
+            {
+                return Forbid();
+            }
+
+            if (await _userManager.FindByIdAsync(profileEditVM.UserId) is ApplicationUser user)
+            {
+                if (!ModelState.IsValid)
+                    return View(profileEditVM);
+
+                user.UserName = profileEditVM.UserName;
+                user.FirstName = profileEditVM.FirstName;
+                user.LastName = profileEditVM.LastName;
+                user.Address = profileEditVM.Address;
+
+                var result = await _userManager.UpdateAsync(user);
+
+                if (result.Succeeded)
+                {
+                    // Refresh authentication cookie
+                    await _signInManager.RefreshSignInAsync(user);
+
+                    TempData["success-notification"] = "Profile is Updated Successfully";
+                    return RedirectToAction("Index", "Home", new { area = "Customer" });
+                }
+                else
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                }
             }
             return NotFound();
         }

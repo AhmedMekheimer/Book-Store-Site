@@ -10,10 +10,11 @@
 		await Html.RenderPartialAsync("_ValidationScriptsPartial");
 	}
 }
-<h1>Register New Account</h1>
-<br />
+
 <div class="row">
-	<div class="col-md-6">
+	<div class="center-container">
+		<h1>Register New Account</h1>
+		<br />
 		<form asp-action="Register" method="post">
 			<div asp-validation-summary="ModelOnly" class="text-danger"></div>
 			<div class="form-group">
@@ -64,11 +65,5 @@
 				</button>
 			</div>
 		</form>
-		<br />
-		<div>
-			<a asp-area="Identity" asp-controller="Account" asp-action="SignIn">
-				Already Have An Account ?
-			</a>
-		</div>
 	</div>
 </div>
