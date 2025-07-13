@@ -15,3 +15,5 @@ global using Microsoft.AspNetCore.Identity.UI.Services;
 global using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
 global using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 global using Online_Book_Store.ViewModels.Identity;
+global using Microsoft.IdentityModel.Tokens;
+global using Online_Book_Store.Utility;

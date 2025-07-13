@@ -1,4 +1,7 @@
-﻿namespace Online_Book_Store.Areas.Admin.Controllers
+﻿using Microsoft.AspNetCore.Authorization;
+using Online_Book_Store.Utility;
+
+namespace Online_Book_Store.Areas.Admin.Controllers
 {
     [Area("Admin")]
     public class AuthorController : Controller
@@ -11,12 +14,13 @@
             _afRepo = afRepo;
             _authRepo = authRepo;
         }
-
+        [Authorize(Policy = $"{SD.Workers}")]
         public async Task<IActionResult> Index()
         {
             var Authors = await _authRepo.GetAsync(null, new Expression<Func<Author, object>>[] { a => a.Books });
             return View(Authors);
         }
+        [Authorize(Policy = $"{SD.Admins}")]
         public IActionResult Create()
         {
 
@@ -25,6 +29,7 @@
 
         [HttpPost]
         [RequestSizeLimit(1_000_000_000)] // 1GB limit
+        [Authorize(Policy = $"{SD.Admins}")]
         public async Task<IActionResult> Create(Author author, IFormFile file)
         {
             if (author is null)
@@ -51,6 +56,7 @@
 
             return RedirectToAction(nameof(Index));
         }
+        [Authorize(Policy = $"{SD.Admins}")]
         public async Task<IActionResult> Edit(int id)
         {
             var author = await _authRepo.GetOneAsync(a => a.Id == id, new Expression<Func<Author, object>>[] { a => a.Files });
@@ -62,6 +68,7 @@
 
         [HttpPost]
         [RequestSizeLimit(1_000_000_000)] // 1GB limit
+        [Authorize(Policy = $"{SD.Admins}")]
         public async Task<IActionResult> Edit(Author author, IFormFile file)
         {
             if (author is null)
@@ -110,6 +117,7 @@
 
             return RedirectToAction(nameof(Index));
         }
+        [Authorize(Policy = $"{SD.Admins}")]
         public async Task<IActionResult> Delete(int id)
         {
             if (await (_authRepo.GetOneAsync(a => a.Id == id, new Expression<Func<Author, object>>[] { a => a.Files })) is Author author)

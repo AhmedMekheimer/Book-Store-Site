@@ -1,4 +1,6 @@
-﻿using Online_Book_Store.ViewModels.Admin;
+﻿using Microsoft.AspNetCore.Authorization;
+using Online_Book_Store.Utility;
+using Online_Book_Store.ViewModels.Admin;
 
 namespace Online_Book_Store.Areas.Admin.Controllers
 {
@@ -18,12 +20,13 @@ namespace Online_Book_Store.Areas.Admin.Controllers
             _pubRepo = pubRepo;
             _bfRepo = bfRepo;
         }
-
+        [Authorize(Policy = $"{SD.Workers}")]
         public async Task<IActionResult> Index()
         {
             var books = await _bookRepo.GetAsync(null, new Expression<Func<Book, object>>[] { b => b.Authors });
             return View(books);
         }
+        [Authorize(Policy =$"{SD.Admins}")]
         public async Task<IActionResult> Create()
         {
             var categories = await _catRepo.GetAsync();
@@ -40,6 +43,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
         }
         [HttpPost]
         [RequestSizeLimit(1_000_000_000)] // 1GB limit
+        [Authorize(Policy =$"{SD.Admins}")]
         public async Task<IActionResult> Create(BookDataVM bookDataVM, List<IFormFile> files)
         {
             if (bookDataVM.Book is null)
@@ -124,7 +128,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-
+        [Authorize(Policy =$"{SD.Admins}")]
         public async Task<IActionResult> Edit(int id)
         {
             Book? book = await _bookRepo.GetOneAsync(b => b.Id == id, new Expression<Func<Book, object>>[] {
@@ -153,6 +157,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
 
         [HttpPost]
         [RequestSizeLimit(1_000_000_000)] // 1GB limit
+        [Authorize(Policy =$"{SD.Admins}")]
         public async Task<IActionResult> Edit(BookDataVM bookDataVM, List<IFormFile> files, List<int> ExistingFilesIds)
         {
             if (bookDataVM.Book is null)
@@ -287,7 +292,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
             await _bookRepo.UpdateAsync(NewBook);
             return RedirectToAction(nameof(Index));
         }
-
+        [Authorize(Policy =$"{SD.Admins}")]
         public async Task<IActionResult> Delete(int id)
         {
             if (await (_bookRepo.GetOneAsync(b => b.Id == id, new Expression<Func<Book, object>>[] { b => b.Files})) is Book book)

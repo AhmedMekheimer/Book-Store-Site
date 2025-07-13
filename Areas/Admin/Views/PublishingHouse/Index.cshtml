@@ -7,9 +7,12 @@
 <div class="admin-container">
     <div class="page-header">
         <h1 class="page-title">Publishing Houses</h1>
-        <a class="btn btn-create" asp-area="Admin" asp-controller="PublishingHouse" asp-action="Create">
-            Create Publishing House
-        </a>
+        @if (User.IsInRole($"{SD.Admin}") || User.IsInRole($"{SD.SuperAdmin}"))
+        {
+            <a class="btn btn-create" asp-area="Admin" asp-controller="PublishingHouse" asp-action="Create">
+                Create Publishing House
+            </a>
+        }
     </div>
 
     <div class="item-container">
@@ -51,17 +54,20 @@
                             </div>
                         </div>
                         <div class="item-actions">
-                            <a class="btn btn-action btn-edit" asp-area="Admin" asp-controller="PublishingHouse" asp-action="Edit" asp-route-id="@pub.Id">
-                                <i class="fas fa-edit me-1"></i>Edit
-                            </a>
-                            <a class="btn btn-action btn-delete"
-                               asp-area="Admin"
-                               asp-controller="PublishingHouse"
-                               asp-action="Delete"
-                               asp-route-id="@pub.Id"
-                               data-name="@pub.Name">
-                                <i class="fas fa-trash me-1"></i>Delete
-                            </a>
+                            @if (User.IsInRole($"{SD.Admin}") || User.IsInRole($"{SD.SuperAdmin}"))
+                            {
+                                <a class="btn btn-action btn-edit" asp-area="Admin" asp-controller="PublishingHouse" asp-action="Edit" asp-route-id="@pub.Id">
+                                    <i class="fas fa-edit me-1"></i>Edit
+                                </a>
+                                <a class="btn btn-action btn-delete"
+                                asp-area="Admin"
+                                asp-controller="PublishingHouse"
+                                asp-action="Delete"
+                                asp-route-id="@pub.Id"
+                                data-name="@pub.Name">
+                                    <i class="fas fa-trash me-1"></i>Delete
+                                </a>
+                            }
                         </div>
                     </div>
                 }

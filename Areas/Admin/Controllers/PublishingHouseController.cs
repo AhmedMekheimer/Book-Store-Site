@@ -1,4 +1,7 @@
-﻿namespace Online_Book_Store.Areas.Admin.Controllers
+﻿using Microsoft.AspNetCore.Authorization;
+using Online_Book_Store.Utility;
+
+namespace Online_Book_Store.Areas.Admin.Controllers
 {
     [Area("Admin")]
     public class PublishingHouseController : Controller
@@ -11,12 +14,13 @@
             _pubRepo = pubRepo;
             _pfRepo = pfRepo;
         }
+        [Authorize(Policy = $"{SD.Workers}")]
         public async Task<IActionResult> Index()
         {
             var PublishingHouses = await _pubRepo.GetAsync(null, new Expression<Func<PublishingHouse, object>>[] { p => p.Books });
             return View(PublishingHouses);
         }
-
+        [Authorize(Policy = $"{SD.Admins}")]
         public IActionResult Create()
         {
             return View(new PublishingHouse());
@@ -24,6 +28,7 @@
 
         [HttpPost]
         [RequestSizeLimit(1_000_000_000)] // 1GB limit
+        [Authorize(Policy = $"{SD.Admins}")]
         public async Task<IActionResult> Create(PublishingHouse publishingHouse, List<IFormFile> files)
         {
             if (publishingHouse is null)
@@ -60,7 +65,7 @@
 
             return RedirectToAction(nameof(Index));
         }
-
+        [Authorize(Policy = $"{SD.Admins}")]
         public async Task<IActionResult> Edit(int id)
         {
             var publishingHouse = await _pubRepo.GetOneAsync(p => p.Id == id, new Expression<Func<PublishingHouse, object>>[] { p => p.Files });
@@ -73,6 +78,7 @@
 
         [HttpPost]
         [RequestSizeLimit(1_000_000_000)] // 1GB limit
+        [Authorize(Policy = $"{SD.Admins}")]
         public async Task<IActionResult> Edit(PublishingHouse publishingHouse, List<IFormFile> files, List<int> ExistingFilesIds)
         {
             if (publishingHouse is null)
@@ -154,7 +160,7 @@
             await _pubRepo.UpdateAsync(NewPub);
             return RedirectToAction(nameof(Index));
         }
-
+        [Authorize(Policy = $"{SD.Admins}")]
         public async Task<IActionResult> Delete(int id)
         {
             if (await(_pubRepo.GetOneAsync(c => c.Id == id, new Expression<Func<PublishingHouse, object>>[] { c => c.Files })) is PublishingHouse publishingHouse)

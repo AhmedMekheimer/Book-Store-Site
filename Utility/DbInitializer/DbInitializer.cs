@@ -23,11 +23,11 @@ namespace Online_Book_Store.Utility.DbInitializer
             if(roleManager.Roles.IsNullOrEmpty())
             {
                 //Roles Creation
-                roleManager.CreateAsync(new(StaticData.SuperAdmin)).GetAwaiter().GetResult();
-                roleManager.CreateAsync(new(StaticData.Admin)).GetAwaiter().GetResult();
-                roleManager.CreateAsync(new(StaticData.Employer)).GetAwaiter().GetResult();
-                roleManager.CreateAsync(new(StaticData.Company)).GetAwaiter().GetResult();
-                roleManager.CreateAsync(new(StaticData.Customer)).GetAwaiter().GetResult();
+                roleManager.CreateAsync(new(SD.SuperAdmin)).GetAwaiter().GetResult();
+                roleManager.CreateAsync(new(SD.Admin)).GetAwaiter().GetResult();
+                roleManager.CreateAsync(new(SD.Employer)).GetAwaiter().GetResult();
+                roleManager.CreateAsync(new(SD.Company)).GetAwaiter().GetResult();
+                roleManager.CreateAsync(new(SD.Customer)).GetAwaiter().GetResult();
 
                 //Super Admin User Creation
                 userManager.CreateAsync(new()
@@ -40,7 +40,7 @@ namespace Online_Book_Store.Utility.DbInitializer
                 },"Admin123$").GetAwaiter().GetResult();
 
                 var admin = userManager.FindByNameAsync("Mekheimer").GetAwaiter().GetResult();
-                userManager.AddToRoleAsync(admin!,StaticData.SuperAdmin).GetAwaiter().GetResult();
+                userManager.AddToRoleAsync(admin!,SD.SuperAdmin).GetAwaiter().GetResult();
             }
         }
     }

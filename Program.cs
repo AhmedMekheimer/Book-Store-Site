@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -31,7 +32,7 @@ namespace Online_Book_Store
 
             builder.Services.AddTransient<IEmailSender, EmailSender>();
 
-            builder.Services.AddScoped<IRepository<Book>,Repository<Book>>();
+            builder.Services.AddScoped<IRepository<Book>, Repository<Book>>();
             builder.Services.AddScoped<IRepository<Category>, Repository<Category>>();
             builder.Services.AddScoped<IRepository<PublishingHouse>, Repository<PublishingHouse>>();
             builder.Services.AddScoped<IRepository<Author>, Repository<Author>>();
@@ -50,6 +51,26 @@ namespace Online_Book_Store
             builder.Services.Configure<FormOptions>(options =>
             {
                 options.MultipartBodyLengthLimit = long.MaxValue;
+            });
+
+            //Before app.Build, because after it the services become READ-ONLY
+            // Authentication
+            builder.Services.ConfigureApplicationCookie(
+                options =>
+                {
+                    options.LoginPath = "/Identity/Account/SignIn";
+                    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+                }
+                );
+
+            // Authorization
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy($"{SD.Admins}", policy =>
+                      policy.RequireRole($"{SD.Admin}", $"{SD.SuperAdmin}"));
+
+                options.AddPolicy($"{SD.Workers}", policy =>
+                      policy.RequireRole($"{SD.Admin}", $"{SD.SuperAdmin}", $"{SD.Company}", $"{SD.Employer}"));
             });
 
             var app = builder.Build();
@@ -72,6 +93,7 @@ namespace Online_Book_Store
             app.UseHttpsRedirection();
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapStaticAssets();

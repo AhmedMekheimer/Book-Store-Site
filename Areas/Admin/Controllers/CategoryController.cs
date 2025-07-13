@@ -1,4 +1,7 @@
-﻿namespace Online_Book_Store.Areas.Admin.Controllers
+﻿using Microsoft.AspNetCore.Authorization;
+using Online_Book_Store.Utility;
+
+namespace Online_Book_Store.Areas.Admin.Controllers
 {
     [Area("Admin")]
     public class CategoryController : Controller
@@ -11,12 +14,13 @@
             _catRepo = catRepo;
             _cfRepo = cfRepo;
         }
-
+        [Authorize(Policy = $"{SD.Workers}")]
         public async Task<IActionResult> Index()
         {
             var categories = await _catRepo.GetAsync(null,new Expression<Func<Category, object>>[] {c=>c.Books});
             return View(categories);
         }
+        [Authorize(Policy = $"{SD.Admins}")]
         public IActionResult Create()
         {
             return View(new Category());
@@ -24,6 +28,7 @@
 
         [HttpPost]
         [RequestSizeLimit(1_000_000_000)] // 1GB limit
+        [Authorize(Policy = $"{SD.Admins}")]
         public async Task<IActionResult> Create(Category category, List<IFormFile> files)
         {
             if (category is null)
@@ -59,7 +64,7 @@
 
             return RedirectToAction(nameof(Index));
         }
-
+        [Authorize(Policy = $"{SD.Admins}")]
         public async Task<IActionResult> Edit(int id)
         {
             var category = await _catRepo.GetOneAsync(c => c.Id == id,new Expression<Func<Category, object>>[] {c => c.Files});
@@ -72,6 +77,7 @@
 
         [HttpPost]
         [RequestSizeLimit(1_000_000_000)] // 1GB limit
+        [Authorize(Policy = $"{SD.Admins}")]
         public async Task<IActionResult> Edit(Category category, List<IFormFile> files, List<int> ExistingFilesIds)
         {
             if (category is null)
@@ -153,7 +159,7 @@
             await _catRepo.UpdateAsync(NewCategory);
             return RedirectToAction(nameof(Index));
         }
-
+        [Authorize(Policy = $"{SD.Admins}")]
         public async Task<IActionResult> Delete(int id)
         {
             if (await(_catRepo.GetOneAsync(c => c.Id == id, new Expression<Func<Category, object>>[] { c => c.Files })) is Category category)
