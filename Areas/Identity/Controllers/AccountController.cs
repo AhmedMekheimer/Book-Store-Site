@@ -153,22 +153,22 @@ namespace Online_Book_Store.Areas.Identity.Controllers
                         await SendConfirmationEmail(user);
                         return View(signInVM);
                     }
+                    if (!user.LockoutEnabled)
+                    {
+                        TempData["error-notification"] = $"You are locked out until {user.LockoutEnd}";
+                        return View(signInVM);
+                    }
 
                     await _signInManager.SignInAsync(user, signInVM.RememberMe);
                     TempData["success-notification"] = "Signed In Successfully";
                     return RedirectToAction("Index", "Home", new { area = "Customer" });
                 }
-                if (!user.LockoutEnabled)
-                {
-                    TempData["error-notification"] = $"You are locked out until {user.LockoutEnd}";
-                    return View(signInVM);
-                }
 
                 ModelState.AddModelError("UserNameOrEmail", "Invalid UserName Or Email");
                 ModelState.AddModelError("Password", "Invalid Password");
                 return View(signInVM);
-
             }
+
             ModelState.AddModelError("UserNameOrEmail", "Invalid UserName Or Email");
             ModelState.AddModelError("Password", "Invalid Password");
             return View(signInVM);

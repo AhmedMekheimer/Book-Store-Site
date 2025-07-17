@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pag
 using Online_Book_Store.Models;
 using Online_Book_Store.ViewModels.Identity;
 using System.Data;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Online_Book_Store.Areas.Admin.Controllers
@@ -202,6 +203,75 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 return View(userEditVM);
             }
             return NotFound();
+        }
+
+        [Authorize(Policy = $"{SD.Admins}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            if (await _userManager.FindByIdAsync(id) is ApplicationUser applicationUser)
+            {
+                // Get current user ID
+                var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                // Prevent self-deletion
+                if (id == currentUserId)
+                {
+                    TempData["error-notification"] = "You cannot delete your own account";
+                    return RedirectToAction("Index");
+                }
+
+                var result = await _userManager.DeleteAsync(applicationUser);
+                if (result.Succeeded)
+                { 
+                    TempData["success-notification"] = "User Deleted Successfully";
+                    return RedirectToAction("Index", "User", new { area = "Admin" });
+                }
+
+                TempData["error-notification"] = "User Deletion Error";
+                return RedirectToAction("Index", "User", new { area = "Admin" });
+            }
+            TempData["error-notification"] = "User Not Found";
+            return RedirectToAction("Index", "User", new { area = "Admin" });
+        }
+
+        [Authorize(Policy = $"{SD.Admins}")]
+        public async Task<IActionResult> BlockUnBlock(string id)
+        {
+            if (await _userManager.FindByIdAsync(id) is ApplicationUser applicationUser)
+            {
+                // Get current user ID
+                var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                // Prevent self-blocking
+                if (id == currentUserId)
+                {
+                    TempData["error-notification"] = "You cannot block your own account";
+                    return RedirectToAction("Index");
+                }
+
+                if (applicationUser.LockoutEnabled)
+                {
+                    applicationUser.LockoutEnabled = false;
+                    applicationUser.LockoutEnd = DateTime.UtcNow.AddDays(30);
+                    TempData["success-notification"] = $"User Blocked until {applicationUser.LockoutEnd}";
+                }
+                else
+                {
+                    applicationUser.LockoutEnabled = true;
+                    applicationUser.LockoutEnd = null;
+                    TempData["success-notification"] = "User is UnBlocked Successfully";
+                }
+                var result=await _userManager.UpdateAsync(applicationUser);
+                if (result.Succeeded)
+                    return RedirectToAction("Index", "User", new { area = "Admin" });
+                else
+                {
+                    TempData["error-notification"] = "User data wasn't updated";
+                    return RedirectToAction("Index", "User", new { area = "Admin" });
+                }
+            }
+            TempData["error-notification"] = "User Not Found";
+            return RedirectToAction("Index", "User", new { area = "Admin" });
         }
     }
 }

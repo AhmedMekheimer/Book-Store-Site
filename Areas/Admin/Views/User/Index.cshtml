@@ -3,10 +3,6 @@
 	ViewData["Title"] = "User Management";
 }
 
-@section Scripts {
-	<partial name="_NotificationPartial.cshtml" />
-}
-
 <div class="admin-container">
 	<div class="page-header">
 		<h1 class="page-title">Application Users</h1>
@@ -88,17 +84,22 @@
 											{
 												@if (user.LockoutEnabled)
 												{
-													<a href="/Admin/User/LockUnLock/@user.Id" class="btn-action btn-block" title="Block">
+													<a href="/Admin/User/BlockUnBlock/@user.Id" class="btn-action btn-block" title="Block">
 														Block
 													</a>
 												}
 												else
 												{
-													<a href="/Admin/User/LockUnLock/@user.Id" class="btn-action btn-unblock" title="Unblock">
+													<a href="/Admin/User/BlockUnBlock/@user.Id" class="btn-action btn-unblock" title="Unblock">
 														Remove Block
 													</a>
 												}
-												<a href="/Admin/User/Delete/@user.Id" class="btn-action btn-delete" title="Delete" data-id="@user.Id">
+												<a class="btn btn-action btn-delete"
+												   asp-area="Admin"
+												   asp-controller="User"
+												   asp-action="Delete"
+												   asp-route-id="@user.Id"
+												   data-name="@user.UserName">
 													Delete
 												</a>
 											}
@@ -113,3 +114,55 @@
 		}
 	</div>
 </div>
+
+@section Scripts {
+	<partial name="_NotificationPartial.cshtml" />
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			// Delete buttons with confirmation
+			const deleteButtons = document.querySelectorAll(".btn-delete");
+
+			deleteButtons.forEach(button => {
+				button.addEventListener("click", function(e) {
+					e.preventDefault(); // Prevent immediate navigation
+
+					// Get URL and user info
+					const deleteUrl = this.getAttribute("href");
+					const userName = this.getAttribute("data-name");
+					const row = this.closest('tr');
+
+					// Show confirmation dialog
+					Swal.fire({
+						title: 'Are you sure?',
+						text: `You are about to delete the user "${userName}". This action cannot be undone.`,
+						icon: 'warning',
+						showCancelButton: true,
+						confirmButtonColor: '#d33',
+						cancelButtonColor: '#3085d6',
+						confirmButtonText: 'Yes, delete user',
+						cancelButtonText: 'Cancel',
+						reverseButtons: true
+					}).then((result) => {
+						if (result.isConfirmed) {
+							// Visual feedback
+							row.classList.add('deleting');
+							this.classList.add('deleting');
+
+							// Change button to show loading state
+							const originalHTML = this.innerHTML;
+							this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+							this.disabled = true;
+
+							// Add a short delay to show the loading state
+							setTimeout(() => {
+								// Navigate to delete URL
+								window.location.href = deleteUrl;
+							}, 500);
+						}
+					});
+				});
+			});
+		});
+	</script>
+}
