@@ -172,6 +172,11 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 applicationUser.EmailConfirmed = userEditVM.ConfirmEmail;
 
                 var userEditResult = await _userManager.UpdateAsync(applicationUser);
+                foreach (var item in userEditResult.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, item.Description);
+                    return View(userEditVM);
+                }
 
                 var userRoles = await _userManager.GetRolesAsync(applicationUser);
 
@@ -179,18 +184,14 @@ namespace Online_Book_Store.Areas.Admin.Controllers
 
                 var rolesAddResult = await _userManager.AddToRolesAsync(applicationUser, userEditVM.Roles);
 
-                // User and its Roles Updated Successfully
-                if (userEditResult.Succeeded && rolesAddResult.Succeeded && rolesRemoveResult.Succeeded)
+                // User Roles Updated Successfully
+                if (rolesAddResult.Succeeded && rolesRemoveResult.Succeeded)
                 {
                     // Success msg
                     TempData["success-notification"] = "User updated Successfully";
                     return RedirectToAction("Index", "User", new { area = "Admin" });
                 }
 
-                foreach (var item in userEditResult.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, item.Description);
-                }
                 foreach (var item in rolesAddResult.Errors)
                 {
                     ModelState.AddModelError(string.Empty, item.Description);
@@ -199,7 +200,6 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 {
                     ModelState.AddModelError(string.Empty, item.Description);
                 }
-
                 return View(userEditVM);
             }
             return NotFound();
