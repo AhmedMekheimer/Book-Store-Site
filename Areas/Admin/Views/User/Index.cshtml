@@ -1,0 +1,115 @@
+﻿@model Dictionary<ApplicationUser, string>
+@{
+	ViewData["Title"] = "User Management";
+}
+
+@section Scripts {
+	<partial name="_NotificationPartial.cshtml" />
+}
+
+<div class="admin-container">
+	<div class="page-header">
+		<h1 class="page-title">Application Users</h1>
+		@if (User.IsInRole(SD.SuperAdmin) || User.IsInRole(SD.Admin))
+		{
+			<a class="btn btn-create" asp-area="Admin" asp-controller="User" asp-action="Create">
+				<i class="fas fa-plus-circle"></i> Create User
+			</a>
+		}
+	</div>
+
+	<!-- Search Section -->
+	<div class="search-container">
+		<div class="search-box">
+			<form asp-area="Admin" asp-controller="User" asp-action="Index">
+				<input value="@(ViewBag.Search ?? "")"
+					   type="text"
+					   id="searchInput"
+					   name="search"
+					   placeholder="Search Users...">
+
+				<button type="submit" class="filter-btn">
+					Search
+				</button>
+			</form>
+		</div>
+	</div>
+
+	<div class="user-management-container">
+		@if (Model.Count == 0)
+		{
+			<div class="empty-state">
+				<i class="fas fa-user-slash"></i>
+				<h3>No Users Found</h3>
+			</div>
+		}
+		else
+		{
+			<div class="table-responsive">
+				<table class="user-table">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Username</th>
+							<th>Email</th>
+							<th>Roles</th>
+							@if (User.IsInRole(SD.SuperAdmin) || User.IsInRole(SD.Admin))
+							{
+								<th>Actions</th>
+							}
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var user in Model.Keys)
+						{
+							<tr>
+								<td data-label="Name">
+									<div class="user-info">
+										<div>@user.FirstName @user.LastName</div>
+									</div>
+								</td>
+								<td data-label="Username">@user.UserName</td>
+								<td data-label="Email">@user.Email</td>
+								<td data-label="Roles">
+									@Model[user]
+								</td>
+								@if (User.IsInRole(SD.SuperAdmin) || User.IsInRole(SD.Admin))
+								{
+									<td data-label="Actions">
+										<div class="action-buttons">
+											@if (!(Model[user].Contains(SD.SuperAdmin) && User.IsInRole(SD.Admin)))
+											{
+												<a href="/Admin/User/Edit/@user.Id" class="btn-action btn-edit" title="Edit">
+													Edit
+												</a>
+											}
+
+											@if (!Model[user].Contains(SD.SuperAdmin))
+											{
+												@if (user.LockoutEnabled)
+												{
+													<a href="/Admin/User/LockUnLock/@user.Id" class="btn-action btn-block" title="Block">
+														Block
+													</a>
+												}
+												else
+												{
+													<a href="/Admin/User/LockUnLock/@user.Id" class="btn-action btn-unblock" title="Unblock">
+														Remove Block
+													</a>
+												}
+												<a href="/Admin/User/Delete/@user.Id" class="btn-action btn-delete" title="Delete" data-id="@user.Id">
+													Delete
+												</a>
+											}
+										</div>
+									</td>
+								}
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+	</div>
+</div>

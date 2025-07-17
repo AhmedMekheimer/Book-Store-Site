@@ -1,8 +1,9 @@
-﻿using System.ComponentModel;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel;
 
 namespace Online_Book_Store.ViewModels.Identity
 {
-    public class RegisterVM
+    public class UserCreateVM
     {
         public int Id { get; set; }
 
@@ -26,6 +27,8 @@ namespace Online_Book_Store.ViewModels.Identity
         [MaxLength(256)]
         public string Email { get; set; } = null!;
 
+        public bool ConfirmEmail { get; set; } = false;
+
         [Required]
         [DataType(DataType.Password)] 
         public string Password { get; set; } = null!;
@@ -38,5 +41,7 @@ namespace Online_Book_Store.ViewModels.Identity
         [MinLength(10)]
         [MaxLength(100)]
         public string? Address { get; set; }
+
+        public List<string> Roles { get; set; } = new();
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Online_Book_Store.Utility
+﻿using System.Collections.Generic;
+
+namespace Online_Book_Store.Utility
 {
     public class SD
     {
@@ -9,5 +11,13 @@
         public const string Customer = "Customer";
         public const string Admins = "Admins";
         public const string Workers = "Workers";
+        public static readonly List<string> AllRoles = new List<string>()
+        {
+            SuperAdmin,
+            Admin,
+            Employer,
+            Company,
+            Customer
+        };
     }
 }

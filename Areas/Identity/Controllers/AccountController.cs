@@ -35,7 +35,7 @@ namespace Online_Book_Store.Areas.Identity.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register(RegisterVM registerVM)
+        public async Task<IActionResult> Register(UserCreateVM registerVM)
         {
             if (!ModelState.IsValid)
                 return View(registerVM);
@@ -276,12 +276,11 @@ namespace Online_Book_Store.Areas.Identity.Controllers
 
         public async Task<IActionResult> ProfileEdit()
         {
-            // Get current user instead of using URL parameter
             var currentUser = await _userManager.GetUserAsync(User);
 
             if (currentUser == null) return NotFound();
 
-            return View(new ProfileEditVM()
+            return View(new UserEditVM()
             {
                 UserId = currentUser.Id,
                 UserName = currentUser.UserName!,
@@ -292,7 +291,7 @@ namespace Online_Book_Store.Areas.Identity.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ProfileEdit(ProfileEditVM profileEditVM)
+        public async Task<IActionResult> ProfileEdit(UserEditVM profileEditVM)
         {
             var currentUser = await _userManager.GetUserAsync(User);
 
