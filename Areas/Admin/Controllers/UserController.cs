@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
+using Online_Book_Store.Models;
+using Online_Book_Store.ViewModels.Identity;
 using System.Data;
 using System.Threading.Tasks;
 
@@ -71,14 +73,14 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 LastName = userCreateVM.LastName,
                 Address = userCreateVM.Address,
                 Email = userCreateVM.Email,
-                EmailConfirmed=userCreateVM.ConfirmEmail
+                EmailConfirmed = userCreateVM.ConfirmEmail
             };
 
             var userCreateResult = await _userManager.CreateAsync(applicationUser, userCreateVM.Password);
 
             var userRoles = await _userManager.GetRolesAsync(applicationUser);
 
-            var rolesRemoveResult=await _userManager.RemoveFromRolesAsync(applicationUser, userRoles);
+            var rolesRemoveResult = await _userManager.RemoveFromRolesAsync(applicationUser, userRoles);
 
             var rolesAddResult = await _userManager.AddToRolesAsync(applicationUser, userCreateVM.Roles);
 
@@ -106,5 +108,100 @@ namespace Online_Book_Store.Areas.Admin.Controllers
             return View(userCreateVM);
         }
 
+        [Authorize(Policy = $"{SD.Admins}")]
+        public async Task<IActionResult> Edit(string id)
+        {
+            if (await _userManager.FindByIdAsync(id) is ApplicationUser user)
+            {
+                UserEditVM userEditVM = new UserEditVM()
+                {
+                    UserId = user.Id,
+                    UserName = user.UserName,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email,
+                    ConfirmEmail = user.EmailConfirmed,
+                    Address = user.Address
+                };
+
+                var userRoles = (await _userManager.GetRolesAsync(user)).ToList();
+                userEditVM.Roles = userRoles;
+
+                return View(userEditVM);
+            }
+            return NotFound();
+
+        }
+
+        [Authorize(Policy = $"{SD.Admins}")]
+        [HttpPost]
+        public async Task<IActionResult> Edit(UserEditVM userEditVM)
+        {
+            ModelState.Remove("Id");
+            if (!ModelState.IsValid)
+                return View(userEditVM);
+
+            if (await _userManager.FindByIdAsync(userEditVM.UserId) is ApplicationUser applicationUser)
+            {
+                if (userEditVM.Email != applicationUser.Email)
+                {
+                    // Check if email is already in use
+                    var emailExists = await _userManager.FindByEmailAsync(userEditVM.Email);
+                    if (emailExists != null)
+                    {
+                        ModelState.AddModelError("Email", "Email is already in use.");
+                        return View(userEditVM);
+                    }
+                }
+                if (userEditVM.UserName != applicationUser.UserName)
+                {
+                    // Check if username is already in use
+                    var userExists = await _userManager.FindByNameAsync(userEditVM.UserName);
+                    if (userExists != null)
+                    {
+                        ModelState.AddModelError("UserName", "Username is already in use.");
+                        return View(userEditVM);
+                    }
+                }
+                applicationUser.UserName = userEditVM.UserName;
+                applicationUser.FirstName = userEditVM.FirstName;
+                applicationUser.LastName = userEditVM.LastName;
+                applicationUser.Email = userEditVM.Email;
+                applicationUser.Address = userEditVM.Address;
+                applicationUser.EmailConfirmed = userEditVM.ConfirmEmail;
+
+                var userEditResult = await _userManager.UpdateAsync(applicationUser);
+
+                var userRoles = await _userManager.GetRolesAsync(applicationUser);
+
+                var rolesRemoveResult = await _userManager.RemoveFromRolesAsync(applicationUser, userRoles);
+
+                var rolesAddResult = await _userManager.AddToRolesAsync(applicationUser, userEditVM.Roles);
+
+                // User and its Roles Updated Successfully
+                if (userEditResult.Succeeded && rolesAddResult.Succeeded && rolesRemoveResult.Succeeded)
+                {
+                    // Success msg
+                    TempData["success-notification"] = "User updated Successfully";
+                    return RedirectToAction("Index", "User", new { area = "Admin" });
+                }
+
+                foreach (var item in userEditResult.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, item.Description);
+                }
+                foreach (var item in rolesAddResult.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, item.Description);
+                }
+                foreach (var item in rolesRemoveResult.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, item.Description);
+                }
+
+                return View(userEditVM);
+            }
+            return NotFound();
+        }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using NetTopologySuite.Algorithm;
+using Online_Book_Store.Models;
+using Online_Book_Store.ViewModels.Identity;
 
 namespace Online_Book_Store.Areas.Identity.Controllers
 {
@@ -21,7 +23,7 @@ namespace Online_Book_Store.Areas.Identity.Controllers
             await _emailSender.SendEmailAsync(applicationUser.Email!, "Account Confirmation", $"<h1>Confirm Your Account By Clicking <a href='{link}'>here</a></h1>");
         }
 
-        public AccountController(UserManager<ApplicationUser> userManager, IEmailSender emailSender, SignInManager<ApplicationUser> signInManager,IRepository<ApplicationUserOTP> appUserOTP)
+        public AccountController(UserManager<ApplicationUser> userManager, IEmailSender emailSender, SignInManager<ApplicationUser> signInManager, IRepository<ApplicationUserOTP> appUserOTP)
         {
             _userManager = userManager;
             _emailSender = emailSender;
@@ -112,9 +114,9 @@ namespace Online_Book_Store.Areas.Identity.Controllers
             var user = await _userManager.FindByNameAsync(emailConfirmationVM.UserNameOrEmail) ??
                        await _userManager.FindByEmailAsync(emailConfirmationVM.UserNameOrEmail);
 
-            if (user!=null)
+            if (user != null)
             {
-                if(!user.EmailConfirmed)
+                if (!user.EmailConfirmed)
                 {
                     TempData["success-notification"] = "The Confirmation Email has been Sent";
                     await SendConfirmationEmail(user);
@@ -245,18 +247,18 @@ namespace Online_Book_Store.Areas.Identity.Controllers
         [HttpPost]
         public async Task<IActionResult> ResetPassword(ResetPasswordVM resetPasswordVM)
         {
-            if(await _userManager.FindByIdAsync(resetPasswordVM.UserId) is ApplicationUser user)
+            if (await _userManager.FindByIdAsync(resetPasswordVM.UserId) is ApplicationUser user)
             {
                 if (!ModelState.IsValid)
                     return View(resetPasswordVM);
                 var lastOTP = (await _appUserOTP.GetAsync(e => e.ApplicationUserId == resetPasswordVM.UserId)).OrderBy(e => e.Id).LastOrDefault();
 
-                if(lastOTP is not null && lastOTP.OTPNumber==resetPasswordVM.OTPNumber && lastOTP.Status && lastOTP.ValidTo>DateTime.UtcNow)
+                if (lastOTP is not null && lastOTP.OTPNumber == resetPasswordVM.OTPNumber && lastOTP.Status && lastOTP.ValidTo > DateTime.UtcNow)
                 {
-                    var token =await  _userManager.GeneratePasswordResetTokenAsync(user);
+                    var token = await _userManager.GeneratePasswordResetTokenAsync(user);
                     var result = await _userManager.ResetPasswordAsync(user, token, resetPasswordVM.Password);
 
-                    if(result.Succeeded)
+                    if (result.Succeeded)
                     {
                         TempData["success-notification"] = "Password Reset Succussfully";
                         return RedirectToAction("SignIn", "Account", new { area = "Identity" });
@@ -286,6 +288,7 @@ namespace Online_Book_Store.Areas.Identity.Controllers
                 UserName = currentUser.UserName!,
                 FirstName = currentUser.FirstName,
                 LastName = currentUser.LastName,
+                Email = currentUser.Email!,
                 Address = currentUser.Address
             });
         }
@@ -301,14 +304,38 @@ namespace Online_Book_Store.Areas.Identity.Controllers
                 return Forbid();
             }
 
+            ModelState.Remove("Id");
+            if (!ModelState.IsValid)
+                return View(profileEditVM);
+
             if (await _userManager.FindByIdAsync(profileEditVM.UserId) is ApplicationUser user)
             {
-                if (!ModelState.IsValid)
-                    return View(profileEditVM);
-
+                if (profileEditVM.Email != user.Email)
+                {
+                    // Check if email is already in use
+                    var emailExists = await _userManager.FindByEmailAsync(profileEditVM.Email);
+                    if (emailExists != null)
+                    {
+                        ModelState.AddModelError("Email", "Email is already in use.");
+                        return View(profileEditVM);
+                    }
+                }
+                if (profileEditVM.UserName != user.UserName)
+                {
+                    // Check if username is already in use
+                    var userExists = await _userManager.FindByNameAsync(profileEditVM.UserName);
+                    if (userExists != null)
+                    {
+                        ModelState.AddModelError("UserName", "Username is already in use.");
+                        return View(profileEditVM);
+                    }
+                }
+                if (profileEditVM.Email != user.Email)
+                    user.EmailConfirmed = false;
                 user.UserName = profileEditVM.UserName;
                 user.FirstName = profileEditVM.FirstName;
                 user.LastName = profileEditVM.LastName;
+                user.Email = profileEditVM.Email;
                 user.Address = profileEditVM.Address;
 
                 var result = await _userManager.UpdateAsync(user);

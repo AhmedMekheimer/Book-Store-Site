@@ -79,7 +79,7 @@
 										<div class="action-buttons">
 											@if (!(Model[user].Contains(SD.SuperAdmin) && User.IsInRole(SD.Admin)))
 											{
-												<a href="/Admin/User/Edit/@user.Id" class="btn-action btn-edit" title="Edit">
+												<a href="/Admin/User/Edit/@user.Id" type="button" class="btn-action btn-edit" title="Edit">
 													Edit
 												</a>
 											}

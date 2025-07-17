@@ -26,8 +26,12 @@
         [MaxLength(256)]
         public string Email { get; set; } = null!;
 
+        public bool ConfirmEmail { get; set; }
+
         [MinLength(10)]
         [MaxLength(100)]
         public string? Address { get; set; }
+
+        public List<string> Roles { get; set; } = new();
     }
 }

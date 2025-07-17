@@ -4,17 +4,27 @@ namespace Online_Book_Store.Models
 {
     public class ApplicationUser:IdentityUser
     {
-        public string? Address { get; set; }
+        [Required]
+        [MinLength(3)]
+        [MaxLength(256)]
+        public override string UserName { get; set; } = null!;
+
+        [Required]
+        [MinLength(3)]
+        [MaxLength(100)]
         public string FirstName { get; set; } = null!;
+        [Required]
+        [MinLength(3)]
+        [MaxLength(100)]
         public string LastName { get; set; } = null!;
 
         [Required]
         [EmailAddress]
         [MaxLength(256)]
-        public override string? Email { get; set; }
+        public override string Email { get; set; } = null!;
 
-        [Required]
-        [MaxLength(256)]
-        public override string? UserName { get; set; }
+        [MinLength(10)]
+        [MaxLength(100)]
+        public string? Address { get; set; }
     }
 }
