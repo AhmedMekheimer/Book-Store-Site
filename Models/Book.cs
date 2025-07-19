@@ -10,11 +10,12 @@ namespace Online_Book_Store.Models
         [Required]
         [MinLength(3)]
         public string Name { get; set; } = null!;
-        [Range(100.0, 1_000_000.0)]
+        [Range(10.0, 1_000_000.0)]
         public double Price { get; set; }
         [Range(0, 1_000)]
         public int AvailableCopies { get; set; }
         public int CategoryId { get; set; }
+        [ValidateNever]
         public Category Category { get; set; } = null!;
         [ValidateNever]
         public List<Author> Authors { get; set; } = new List<Author>();

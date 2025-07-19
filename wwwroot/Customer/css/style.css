@@ -15,12 +15,6 @@
     box-sizing: border-box;
 }
 
-html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-}
-
 body {
     display: flex;
     flex-direction: column;
@@ -38,6 +32,11 @@ body {
     justify-content:center;
 }
 
+a {
+    text-decoration: none !important;
+    color: inherit;
+}
+
 .center-container {
     min-height: 70vh;
     display: flex;
@@ -50,10 +49,6 @@ body {
 header a {
     color: inherit; /* Forces inheritance from parent */
     text-decoration: none;
-}
-
-a{
-    text-decoration:none !important;
 }
 
 .text-danger {
@@ -352,6 +347,13 @@ a{
     text-align: center;
     padding: 15px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    background-size: cover; /* Ensure image covers area */
+    background-position: center; /* Center the image */
+}
+
+.category-link {
+    position: relative; /* Ensure it stays above parent link */
+    z-index: 2; /* Make it clickable separately */
 }
 
 .book-details {
@@ -420,7 +422,7 @@ a{
 .price {
     font-weight: 700;
     color: var(--primary);
-    font-size: 1.4rem;
+    font-size: 1rem;
 }
 
 .availability {

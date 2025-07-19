@@ -28,40 +28,42 @@
 				</form>
 			</div>
 		</div>
+
 		<div class="books-grid">
 			@foreach (var book in Model.Books)
 			{
-				<a href="/Customer/Home/BookDetails/?id=@book.Id" style="text-decoration:none; color:inherit;">
-					<div class="book-card">
-						<div class="book-cover"></div>
-						<div class="book-details">
+				<div class="book-card">
+					<!-- Book Cover with Image -->
+					<a asp-area="Customer" asp-controller="Home" asp-action="BookDetails" asp-route-id="@book.Id">
+						<div class="book-cover">
+							<img src="~/Files/@book.Files.FirstOrDefault()" alt="Book Image" class="img-thumbnail" style="max-height: 150px;">
+						</div>
+					</a>
+					<div class="book-details">
+						<a asp-area="Customer" asp-controller="Home" asp-action="BookDetails" asp-route-id="@book.Id">
 							<h3>@book.Name</h3>
-							<span class="category-link" href="@Url.Action("Index", new { PageId=2, Search=Model.Search })" onclick="event.stopPropagation(); window.location='@Url.Action("Index", new { PageId=2, Search=Model.Search })';" style="cursor:pointer; color:#007bff; text-decoration:none;">
-								🏷️@book.Category.Name
-							</span>
-							@foreach (var auth in book.Authors)
+						</a>
+						<a asp-area="Customer" asp-controller="Category" asp-action="Details" asp-route-id="@book.Category.Id">
+							🏷️@book.Category.Name
+						</a>
+
+						<div class="price-row">
+							<span class="price">EGP @book.Price.ToString("F2")</span>
+							@if (book.AvailableCopies == 0)
 							{
-								<span class="author-link" onclick="event.stopPropagation(); window.location='@Url.Action("Index", new { PageId=2, Search=Model.Search })';" style="cursor:pointer; color:#007bff; text-decoration:none;">
-									<i class="fas fa-user-pen"></i> @auth.Name
-								</span>
+								<span class="availability unavailable"><i class="fas fa-times-circle"></i> Out of Stock</span>
 							}
-							<div class="price-row">
-								<span class="price">@book.Price</span>
-								@if (book.AvailableCopies == 0)
-								{
-									<span class="availability unavailable"><i class="fas fa-times-circle"></i> Out of Stock</span>
-								}
-								else
-								{
-									<span class="availability available"><i class="fas fa-check-circle"></i> In Stock</span>
-								}
-							</div>
+							else
+							{
+								<span class="availability available"><i class="fas fa-check-circle"></i> In Stock</span>
+							}
 						</div>
 					</div>
-				</a>
+				</div>
 			}
 		</div>
 	</div>
+
 	<div class="row my-3">
 		<div class="d-flex justify-content-center">
 			<nav aria-label="Page navigation example">
@@ -71,29 +73,33 @@
 						<li class="page-item">
 							<a class="page-link" href="@Url.Action("Index", new {
 								PageId=Model.PageId-1,
-								Search=Model.Search
+								Search=Model.Search,
+							   seed   = Model.Seed
                         })">Previous</a>
 						</li>
 					}
 					@for (int i = 1; i <= Model.NoPages; i++)
 					{
 						<li class="page-item @(i == Model.PageId ? "active" : "")">
-							<a class="page-link @(i == Model.PageId ? "active" : "")" href="@Url.Action("Index", new {
-								PageId=i,
-								Search=Model.Search
-                        })">@i</a>
+						  <a class="page-link"
+							 href="@Url.Action("Index", new {
+							   PageId = i, 
+							   Search = Model.Search, 
+							   seed   = Model.Seed
+							 })">@i</a>
 						</li>
 					}
+
 					@if (!(Model.NoPages == Model.PageId))
 					{
 						<li class="page-item">
 							<a class="page-link" href="@Url.Action("Index", new {
 								PageId=Model.PageId+1,
-								Search=Model.Search
+								Search=Model.Search,
+							    seed   = Model.Seed
                         })">Next</a>
 						</li>
 					}
-
 				</ul>
 			</nav>
 		</div>

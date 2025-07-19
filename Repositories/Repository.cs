@@ -1,6 +1,6 @@
 ﻿namespace Online_Book_Store.Repositories
 {
-    public class Repository<T>:IRepository<T> where T:class
+    public class Repository<T> : IRepository<T> where T : class
     {
         private readonly ApplicationDbContext _context;// = new();
         private DbSet<T> _db { set; get; }
@@ -31,8 +31,9 @@
         {
             try
             {
-                _db.Update(entity);
-                await _context.SaveChangesAsync();
+                var result = _db.Update(entity);
+
+                var result2 = await _context.SaveChangesAsync();
 
                 return true;
             }
@@ -85,9 +86,9 @@
             return (await entities.ToListAsync());
         }
 
-        public async Task<T?> GetOneAsync(Expression<Func<T,bool>>? condition=null, Expression<Func<T, object>>[]? includes=null,bool tracked=true)
+        public async Task<T?> GetOneAsync(Expression<Func<T, bool>>? condition = null, Expression<Func<T, object>>[]? includes = null, bool tracked = true)
         {
-            return (await GetAsync(condition,includes,tracked)).SingleOrDefault();
+            return (await GetAsync(condition, includes, tracked)).SingleOrDefault();
         }
 
         public async Task<bool> CommitAsync()

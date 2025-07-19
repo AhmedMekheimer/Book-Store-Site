@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Chapter & Verse | Bookstore</title>
+	<title>PolyBook | Bookstore</title>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 	<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
 	<link href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
@@ -14,7 +14,7 @@
 	<nav class="navbar">
 		<div class="container">
 			<div class="nav-left">
-				<a href="~/" class="logo">Chapter & Verse</a>
+				<a href="~/" class="logo">PolyBook</a>
 				<div class="nav-links">
 					<a href="#" class="icon">🏷️Categories</a>
 					<a href="#" class="icon">🏢Publishing Houses</a>
@@ -34,6 +34,11 @@
 				else if (User is not null)
 				{
 					<div class="user-menu">
+						@if (User.IsInRole(SD.Admin) || User.IsInRole(SD.SuperAdmin) || User.IsInRole(SD.Employer) || User.IsInRole(SD.Company))
+						{
+							<a href="/Admin" class="auth-btn">Admin Dashboard</a>
+						}
+
 						<a href="/Identity/Account/SignOut" class="auth-btn">Sign Out</a>
 						<a href="/Identity/Account/ProfileEdit" class="profile-icon">
 							<img src="user-profile.jpg" alt="Profile" class="profile-pic" onerror="this.style.display='none'; this.parentElement.querySelector('.default-icon').style.display='block'">
@@ -58,7 +63,7 @@
 	<br />
 	<footer>
 		<div class="copyright">
-			<p>&copy; 2025 Chapter & Verse Bookstore. All rights reserved.</p>
+			<p>&copy; 2025 PolyBook Bookstore. All rights reserved.</p>
 		</div>
 	</footer>
 

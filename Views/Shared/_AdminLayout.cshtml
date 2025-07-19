@@ -3,15 +3,41 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>@ViewData["Title"] Book Store Admin Dashboard</title>
+	<title>@ViewData["Title"] PolyBook Dashboard</title>
 	<link rel="stylesheet" href="~/Admin/css/style.css">
 	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 	<link href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
 </head>
 <body>
-	<header>
-		<h2><a class="no-underline" asp-area="Admin" asp-controller="Home" asp-action="Index">Book Store Admin Dashboard</a></h2>
-	</header>
+	<!-- Navigation Bar -->
+	<nav class="navbar">
+		<div class="container">
+			<div class="nav-left">
+				<a href="/Admin" class="logo">PolyBook Dashboard</a>
+			</div>
+			<!-- Right-aligned auth buttons + profile icon -->
+			<div class="nav-right">
+				<!-- Show these when user is NOT logged in -->
+				@if (User.IsInRole(SD.Admin) || User.IsInRole(SD.SuperAdmin) || User.IsInRole(SD.Employer) || User.IsInRole(SD.Company))
+				{
+					<div class="user-menu">
+						<a href="~/" class="auth-btn">PolyBook Store</a>
+						<a href="/Identity/Account/SignOut" class="auth-btn">Sign Out</a>
+						<a href="/Identity/Account/ProfileEdit" class="profile-icon">
+							<img src="user-profile.jpg" alt="Profile" class="profile-pic" onerror="this.style.display='none'; this.parentElement.querySelector('.default-icon').style.display='block'">
+							<div class="default-icon">
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+									<circle cx="12" cy="7" r="4"></circle>
+								</svg>
+							</div>
+						</a>
+					</div>
+				}
+			</div>
+		</div>
+	</nav>
+
 	<div class="dashboard">
 		<main role="main" class="pb-3">
 			@RenderBody()
@@ -19,7 +45,7 @@
 	</div>
 
 	<footer class="border-top footer text-muted">
-		<p>© 2025 Book Store Admin Dashboard</p>
+		<p>© 2025 PolyBook Dashboard</p>
 	</footer>
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>

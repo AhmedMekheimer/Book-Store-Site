@@ -86,7 +86,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
 
             if (file is not null)
             {
-                foreach (var delFile in (await _afRepo.GetAsync(null, null, false)))
+                foreach (var delFile in (await _afRepo.GetAsync(a=>a.AuthorId==author.Id, null, false)))
                 {
                     // Delete physical file
                     var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\Files", delFile.Name);
@@ -108,9 +108,8 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                     Name = fileName,
                     FileType = fileType
                 };
+                authorFile.AuthorId=author.Id;
                 await _afRepo.CreateAsync(authorFile);
-
-                author.Files.Add(authorFile);
             }
 
             await _authRepo.UpdateAsync(author);

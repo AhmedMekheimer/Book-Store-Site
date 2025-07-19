@@ -147,10 +147,8 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                         Name = fileName,
                         FileType = fileType
                     };
+                    publishingHouseFile.PublishingHouseId = publishingHouse.Id;
                     await _pfRepo.CreateAsync(publishingHouseFile);
-
-                    //Save File to Book Table
-                    NewPub.Files.Add(publishingHouseFile);
                 }
             }
 

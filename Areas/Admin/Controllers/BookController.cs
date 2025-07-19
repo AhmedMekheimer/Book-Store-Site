@@ -26,7 +26,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
             var books = await _bookRepo.GetAsync(null, new Expression<Func<Book, object>>[] { b => b.Authors });
             return View(books);
         }
-        [Authorize(Policy =$"{SD.Admins}")]
+        [Authorize(Policy = $"{SD.Admins}")]
         public async Task<IActionResult> Create()
         {
             var categories = await _catRepo.GetAsync();
@@ -43,7 +43,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
         }
         [HttpPost]
         [RequestSizeLimit(1_000_000_000)] // 1GB limit
-        [Authorize(Policy =$"{SD.Admins}")]
+        [Authorize(Policy = $"{SD.Admins}")]
         public async Task<IActionResult> Create(BookDataVM bookDataVM, List<IFormFile> files)
         {
             if (bookDataVM.Book is null)
@@ -128,7 +128,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-        [Authorize(Policy =$"{SD.Admins}")]
+        [Authorize(Policy = $"{SD.Admins}")]
         public async Task<IActionResult> Edit(int id)
         {
             Book? book = await _bookRepo.GetOneAsync(b => b.Id == id, new Expression<Func<Book, object>>[] {
@@ -157,7 +157,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
 
         [HttpPost]
         [RequestSizeLimit(1_000_000_000)] // 1GB limit
-        [Authorize(Policy =$"{SD.Admins}")]
+        [Authorize(Policy = $"{SD.Admins}")]
         public async Task<IActionResult> Edit(BookDataVM bookDataVM, List<IFormFile> files, List<int> ExistingFilesIds)
         {
             if (bookDataVM.Book is null)
@@ -204,6 +204,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 book.CategoryId = bookDataVM.Book.CategoryId;
 
                 BookCatAuthPubsVM.Book = book;
+
                 return View(BookCatAuthPubsVM);
             }
 
@@ -217,7 +218,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
 
             Book NewBook = new Book();
             NewBook.Id = bookDataVM.Book.Id;
-            NewBook.Name= bookDataVM.Book.Name;
+            NewBook.Name = bookDataVM.Book.Name;
             NewBook.Price = bookDataVM.Book.Price;
             NewBook.AvailableCopies = bookDataVM.Book.AvailableCopies;
             NewBook.CategoryId = bookDataVM.Book.CategoryId;
@@ -238,13 +239,14 @@ namespace Online_Book_Store.Areas.Admin.Controllers
 
                 // Remove file from database
                 // Attach and mark for deletion
-                if(!(await _bfRepo.DeleteAsync(file)))
+                if (!(await _bfRepo.DeleteAsync(file)))
                     return NotFound();
             }
 
-            // Handle Authors 
+            // Handle Authors by clearing this books' authors from AuthorBook Table
             existingBook.Authors.Clear();
-            NewBook.Authors = new List<Author>(); 
+            await _bookRepo.CommitAsync();
+            NewBook.Authors = new List<Author>();
             foreach (var authId in bookDataVM.AuthorsIds)
             {
                 if ((await _authRepo.GetOneAsync(a => a.Id == authId)) is Author auth)
@@ -255,6 +257,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
 
             // Handle Publishing Houses 
             existingBook.PublishingHouses.Clear();
+            await _bookRepo.CommitAsync();
             NewBook.PublishingHouses = new List<PublishingHouse>();
             foreach (var pubId in bookDataVM.PublishersIds)
             {
@@ -280,22 +283,21 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                         Name = fileName,
                         FileType = fileType
                     };
+                    bookFile.BookId = existingBook.Id;
                     await _bfRepo.CreateAsync(bookFile);
-
-                    //Save File to Book Table
-                    NewBook.Files.Add(bookFile);
                 }
             }
-            //Remove Connection with Existing
+
+            //Remove Connection with Existing Book
             _bookRepo.DetachEntity(existingBook);
 
             await _bookRepo.UpdateAsync(NewBook);
             return RedirectToAction(nameof(Index));
         }
-        [Authorize(Policy =$"{SD.Admins}")]
+        [Authorize(Policy = $"{SD.Admins}")]
         public async Task<IActionResult> Delete(int id)
         {
-            if (await (_bookRepo.GetOneAsync(b => b.Id == id, new Expression<Func<Book, object>>[] { b => b.Files})) is Book book)
+            if (await (_bookRepo.GetOneAsync(b => b.Id == id, new Expression<Func<Book, object>>[] { b => b.Files })) is Book book)
             {
                 foreach (var file in book.Files)
                 {

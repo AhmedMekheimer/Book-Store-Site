@@ -146,10 +146,8 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                         Name = fileName,
                         FileType = fileType
                     };
+                    categoryFile.CategoryId=category.Id;
                     await _cfRepo.CreateAsync(categoryFile);
-
-                    //Save File to Book Table
-                    NewCategory.Files.Add(categoryFile);
                 }
             }
 
