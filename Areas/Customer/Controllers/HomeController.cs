@@ -13,50 +13,12 @@ namespace Online_Book_Store.Areas.Customer.Controllers
             _bookRepo = bookRepo;
             _catRepo = catRepo;
         }
-        /*        public async Task<IActionResult> Index(BooksSearchVM booksSearchVM, int PageId = 1)
-                {
-                    const double NumberOfBookstInAPage = 8.0;
-                    if (string.IsNullOrEmpty(booksSearchVM.Search))
-                    {
-                        var books = await _bookRepo.GetAsync(null, new Expression<Func<Book, object>>[] { b => b.Category, b=>b.Files });
-                        books = books.OrderBy(b => 100).ToList();
-                        // Pagination
-                        var NoPages = Math.Ceiling(books.Count() / NumberOfBookstInAPage);
-                        if (NoPages < PageId)
-                            return NotFound();
-                        books = books.Skip((PageId - 1) * (int)NumberOfBookstInAPage).Take((int)NumberOfBookstInAPage);
-                        booksSearchVM.NoPages = NoPages;
-                        booksSearchVM.PageId = PageId;
-                        booksSearchVM.Books = books.ToList();
-                    }
-                    else
-                    {
-                        // Search Filter
-                        var books = await _bookRepo.GetAsync(b => b.Name.Contains(booksSearchVM.Search), new Expression<Func<Book, object>>[] { b => b.Category, b => b.Files });
-                        books = books.OrderBy(b => 100).ToList();
 
-                        // Pagination
-                        var NoPages = Math.Ceiling(books.Count() / NumberOfBookstInAPage);
-                        if (NoPages < PageId)
-                            return NotFound();
-                        books = books.Skip((PageId - 1) * (int)NumberOfBookstInAPage).Take((int)NumberOfBookstInAPage);
-                        booksSearchVM.NoPages = NoPages;
-                        booksSearchVM.PageId = PageId;
-                        booksSearchVM.Books = books.ToList();
-                    }
-
-                    return View(booksSearchVM);
-                }*/
-
-        public async Task<IActionResult> Index( BooksSearchVM vm, int pageId = 1,int? seed = null)
+        public async Task<IActionResult> Index(BooksSearchVM vm)
         {
-            const int pageSize = 8;
+            const int pageSize = 9;
 
-            // 1. Create or preserve seed
-            if (!seed.HasValue)
-                seed = new Random().Next();
-
-            // 2. Fetch *unsorted* list from repo
+            // 1. Fetch *unsorted* list from repo
             var allBooks = (await _bookRepo.GetAsync(
                 condition: string.IsNullOrEmpty(vm.Search)
                              ? null
@@ -66,20 +28,17 @@ namespace Online_Book_Store.Areas.Customer.Controllers
                 tracked: false
             )).ToList();
 
-            // 3. Shuffle in memory with seeded Random
-            var rnd = new Random(seed.Value);
-            var shuffled = allBooks.OrderBy(_ => rnd.Next()).ToList();
+            // 2. Shuffle Books
+            var shuffled = allBooks.OrderBy(b=>b.Name).ToList();
 
-            // 4. Paginate
+            // 3. Paginate
             var totalPages = (int)Math.Ceiling(shuffled.Count / (double)pageSize);
-            if (pageId < 1 || pageId > totalPages)
+            if (vm.PageId < 1 || vm.PageId > totalPages)
                 return NotFound();
 
-            vm.PageId = pageId;
             vm.NoPages = totalPages;
-            vm.Seed = seed.Value;
             vm.Books = shuffled
-                          .Skip((pageId - 1) * pageSize)
+                          .Skip((vm.PageId - 1) * pageSize)
                           .Take(pageSize)
                           .ToList();
 
@@ -89,8 +48,19 @@ namespace Online_Book_Store.Areas.Customer.Controllers
 
         public async Task<IActionResult> BookDetails(int id)
         {
-            if (await _bookRepo.GetOneAsync(b => b.Id == id) is Book book)
-                return View(book);
+            if (await _bookRepo.GetOneAsync(b => b.Id == id,
+                includes: new[] { (Expression<Func<Book, object>>)(b => b.Category),
+                          b => b.Files,b=>b.Authors,b=>b.PublishingHouses },false) is Book book)
+            {
+                var RelatedBooks = await _bookRepo.GetAsync(b=>b.CategoryId==book.CategoryId, includes: new[] { (Expression<Func<Book, object>>)(b => b.Category),
+                          b => b.Files },
+                tracked: false);
+                return View(new BookDetailsVM()
+                {
+                    Book=book,
+                    RelatedBooks=RelatedBooks
+                });
+            }
 
             return NotFound();
         }

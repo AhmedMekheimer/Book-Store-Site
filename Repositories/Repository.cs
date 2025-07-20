@@ -61,7 +61,7 @@
             }
         }
 
-        public async Task<IEnumerable<T>> GetAsync(Expression<Func<T, bool>>? condition = null, Expression<Func<T, object>>[]? includes = null, bool tracked = true)
+        public async Task<List<T>> GetAsync(Expression<Func<T, bool>>? condition = null, Expression<Func<T, object>>[]? includes = null, bool tracked = true)
         {
             IQueryable<T> entities = _db;
 
@@ -83,7 +83,7 @@
                 entities = entities.AsNoTracking();
             }
 
-            return (await entities.ToListAsync());
+            return await entities.ToListAsync();
         }
 
         public async Task<T?> GetOneAsync(Expression<Func<T, bool>>? condition = null, Expression<Func<T, object>>[]? includes = null, bool tracked = true)

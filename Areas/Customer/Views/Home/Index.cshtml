@@ -13,7 +13,7 @@
 
 			<!-- Search Bar -->
 			<div class="search-container">
-				<form action="">
+				<form>
 					@if (Model.Search is not null)
 					{
 						<input value="@Model.Search" type="text" placeholder="Search books..." asp-for="Search" class="search-input">
@@ -33,19 +33,30 @@
 			@foreach (var book in Model.Books)
 			{
 				<div class="book-card">
-					<!-- Book Cover with Image -->
 					<a asp-area="Customer" asp-controller="Home" asp-action="BookDetails" asp-route-id="@book.Id">
-						<div class="book-cover">
-							<img src="~/Files/@book.Files.FirstOrDefault()" alt="Book Image" class="img-thumbnail" style="max-height: 150px;">
+						<div class="book-cover-container">
+							<img src="~/Files/@book.Files.FirstOrDefault().Name" alt="Book Image" class="book-cover">
 						</div>
 					</a>
 					<div class="book-details">
-						<a asp-area="Customer" asp-controller="Home" asp-action="BookDetails" asp-route-id="@book.Id">
-							<h3>@book.Name</h3>
-						</a>
-						<a asp-area="Customer" asp-controller="Category" asp-action="Details" asp-route-id="@book.Category.Id">
+						<h3 class="book-title">
+							<a asp-area="Customer" asp-controller="Home" asp-action="BookDetails" asp-route-id="@book.Id">
+								@book.Name
+							</a>
+						</h3>
+
+						<a class="Category" asp-area="Customer" asp-controller="Category" asp-action="Details" asp-route-id="@book.Category.Id">
 							🏷️@book.Category.Name
 						</a>
+
+@* 						<div class="rating">
+							<i class="fas fa-star"></i>
+							<i class="fas fa-star"></i>
+							<i class="fas fa-star"></i>
+							<i class="fas fa-star"></i>
+							<i class="fas fa-star-half-alt"></i>
+							<span style="color: var(--gray); font-size: 0.8rem; margin-left: 5px;">(4.7)</span>
+						</div> *@
 
 						<div class="price-row">
 							<span class="price">EGP @book.Price.ToString("F2")</span>
@@ -68,36 +79,27 @@
 		<div class="d-flex justify-content-center">
 			<nav aria-label="Page navigation example">
 				<ul class="pagination">
-					@if (!(Model.PageId == 1))
+					@if (Model.PageId > 1)
 					{
 						<li class="page-item">
-							<a class="page-link" href="@Url.Action("Index", new {
-								PageId=Model.PageId-1,
-								Search=Model.Search,
-							   seed   = Model.Seed
-                        })">Previous</a>
+							<a class="page-link" asp-area="Customer" asp-controller="Home" asp-action="Index" asp-route-PageId="@(Model.PageId-1)" asp-route-Search="@Model.Search"
+							>Previous</a>
 						</li>
 					}
 					@for (int i = 1; i <= Model.NoPages; i++)
 					{
 						<li class="page-item @(i == Model.PageId ? "active" : "")">
 						  <a class="page-link"
-							 href="@Url.Action("Index", new {
-							   PageId = i, 
-							   Search = Model.Search, 
-							   seed   = Model.Seed
-							 })">@i</a>
+							 asp-area="Customer" asp-controller="Home" asp-action="Index" asp-route-PageId="@i" asp-route-Search="@Model.Search"
+							>@i</a>
 						</li>
 					}
 
-					@if (!(Model.NoPages == Model.PageId))
+					@if (Model.NoPages > Model.PageId)
 					{
 						<li class="page-item">
-							<a class="page-link" href="@Url.Action("Index", new {
-								PageId=Model.PageId+1,
-								Search=Model.Search,
-							    seed   = Model.Seed
-                        })">Next</a>
+							<a class="page-link" asp-area="Customer" asp-controller="Home" asp-action="Index" asp-route-PageId="@(Model.PageId+1)" asp-route-Search="@Model.Search"
+							   >Next</a>
 						</li>
 					}
 				</ul>

@@ -9,7 +9,7 @@
 
         Task<bool> DeleteAsync(T entity);
 
-        Task<IEnumerable<T>> GetAsync(Expression<Func<T, bool>>? condition = null, Expression<Func<T, object>>[]? includes = null, bool tracked = true);
+        Task<List<T>> GetAsync(Expression<Func<T, bool>>? condition = null, Expression<Func<T, object>>[]? includes = null, bool tracked = true);
 
         Task<T?> GetOneAsync(Expression<Func<T, bool>>? condition = null, Expression<Func<T, object>>[]? includes = null, bool tracked = true);
 

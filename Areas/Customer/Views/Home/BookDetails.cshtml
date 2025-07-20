@@ -1,78 +1,132 @@
-﻿@model Book
+﻿@using Online_Book_Store.ViewModels.Customer
+@model BookDetailsVM
 
-<div class="book-details-container" style="display: flex; gap: 2rem;">
-    <!-- Left Side -->
-    <div style="flex: 1;">
-        <!-- Image Slider -->
-        <div class="image-slider">
-            @if (Model.Files.Any(f => f.FileType == FileType.Image))
-            {
-                <div id="slider">
-                    @foreach (var img in Model.Files.Where(f => f.FileType == FileType.Image))
-                    {
-                        <img src="~/Files/@img.Name" alt="Book Image" style="width:100%; margin-bottom: 1rem;" />
-                    }
-                </div>
-            }
-            else
-            {
-                <p>No images available.</p>
-            }
-        </div>
-        <h2>@Model.Name</h2>
-        <p>Price: @Model.Price.ToString("C")</p>
-        <p>
-            @if (Model.AvailableCopies > 0)
-            {
-                <span style="color:green;">In Stock</span>
-            }
-            else
-            {
-                <span style="color:red;">Out of Stock</span>
-            }
-        </p>
-    </div>
+<div class="book-details-container">
+	<!-- Left Column: Book Cover and Basic Info -->
+	<div class="book-main-section">
+		<div class="book-cover-large">
+			<img src="~/Files/@Model.Book.Files.FirstOrDefault(f => f.FileType == FileType.Image)?.Name" alt="@Model.Book.Name" class="book-cover">
+		</div>
 
-    <!-- Right Side -->
-    <div style="flex: 1;">
-        <!-- Book Review Videos -->
-        <div class="video-section">
-            @foreach (var vid in Model.Files.Where(f => f.FileType == FileType.Video))
-            {
-                <video controls style="margin-bottom: 1rem;">
-                    <source src="~/Files/@vid.Name" type="video/mp4" />
-                    Your browser does not support the video tag.
-                </video>
-            }
-        </div>
-        <p><strong>Category:</strong> @Model.Category.Name</p>
-        <div>
-            <strong>Authors:</strong>
-            <div style="display: flex; gap: 1rem;">
-                @foreach (var author in Model.Authors)
-                {
-                    <div style="text-align:center;">
-                        <img src="~/Files/@(author.Files.FirstOrDefault()?.Name ?? "default-author.png")"
-                             alt="@author.Name"
-                             style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:1px solid #ccc;" />
-                        <div>@author.Name</div>
-                    </div>
-                }
-            </div>
-        </div>
-        <div>
-            <strong>Publishing Houses:</strong>
-            <div style="display: flex; gap: 1rem;">
-                @foreach (var pub in Model.PublishingHouses)
-                {
-                    <div style="text-align:center;">
-                        <img src="~/Files/@(pub.Files.FirstOrDefault()?.Name ?? "default-pub.png")"
-                             alt="@pub.Name"
-                             style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:1px solid #ccc;" />
-                        <div>@pub.Name</div>
-                    </div>
-                }
-            </div>
-        </div>
-    </div>
+		<div class="book-info">
+			<h1 class="book-title-large">@Model.Book.Name</h1>
+			<a class="category-large" asp-area="Customer" asp-controller="Category" asp-action="Details" asp-route-id="@Model.Book.Category.Id">
+				🏷️ @Model.Book.Category.Name
+			</a>
+
+			<div class="price-large">
+				<span>EGP @Model.Book.Price.ToString("F2")</span>
+				@if (Model.Book.AvailableCopies == 0)
+				{
+					<span class="availability-large unavailable-large"><i class="fas fa-times-circle"></i> Out of Stock</span>
+				}
+				else
+				{
+					<span class="availability-large available-large"><i class="fas fa-check-circle"></i> In Stock</span>
+				}
+			</div>
+		</div>
+	</div>
+
+	<!-- Right Column: Authors, Publishers, Video -->
+	<div class="details-section">
+		<!-- Authors Section -->
+		<h3 class="section-title">Authors</h3>
+		<div class="authors-grid">
+			@if (Model.Book.Authors.Any())
+			{
+				foreach (var author in Model.Book.Authors)
+				{
+					<div class="author-item">
+						<i class="fas fa-user-edit"></i>
+						<a asp-area="Customer" asp-controller="Authors" asp-action="AuthorDetails" asp-route-id="@author.Id">
+							<div>@author.Name</div>
+						</a>
+					</div>
+				}
+			}
+			else
+			{
+				<div class="author-item">
+					<i class="fas fa-user-edit"></i>
+					<div>No authors</div>
+				</div>
+			}
+		</div>
+
+		<!-- Publishing Houses Section -->
+		<h3 class="section-title">Publishing Houses</h3>
+		<div class="publishers-grid">
+			@if (Model.Book.PublishingHouses.Any())
+			{
+				foreach (var pub in Model.Book.PublishingHouses)
+				{
+					<div class="publisher-item">
+						<i class="fas fa-building"></i>
+						<a asp-area="Customer" asp-controller="Publishers" asp-action="PublisherDetails" asp-route-id="@pub.Id">
+							<div>@pub.Name</div>
+						</a>
+					</div>
+				}
+			}
+			else
+			{
+				<div class="publisher-item">
+					<i class="fas fa-building"></i>
+					<div>No publishers</div>
+				</div>
+			}
+		</div>
+
+		<!-- Book Review Video -->
+		<h3 class="section-title" style="margin-top: 30px;">Book Review</h3>
+		<div class="video-container">
+			<div class="video-container">
+				<video controls style="width: 100%; height: 100%; object-fit: cover;">
+					<source src="~/Files/@Model.Book.Files.FirstOrDefault(f => f.FileType == FileType.Video)?.Name" type="video/mp4">
+					Your browser does not support the video tag.
+				</video>
+			</div>
+		</div>
+	</div>
+
+	<!-- Related Books Section -->
+	<div class="related-section">
+		<h2>Related Books</h2>
+		<div class="books-grid">
+			@foreach (var book in Model.RelatedBooks)
+			{
+				<div class="book-card">
+					<a asp-area="Customer" asp-controller="Home" asp-action="BookDetails" asp-route-id="@book.Id">
+						<div class="book-cover-container">
+							<img src="~/Files/@book.Files.FirstOrDefault(f => f.FileType == FileType.Image)?.Name" alt="Book Image" class="book-cover">
+						</div>
+					</a>
+					<div class="book-details">
+						<h3 class="book-title">
+							<a asp-area="Customer" asp-controller="Home" asp-action="BookDetails" asp-route-id="@book.Id">
+								@book.Name
+							</a>
+						</h3>
+
+						<a class="Category" asp-area="Customer" asp-controller="Category" asp-action="Details" asp-route-id="@book.CategoryId">
+							🏷️ @book.Category.Name
+						</a>
+
+						<div class="price-row">
+							<span class="price">EGP @book.Price.ToString("F2")</span>
+							@if (book.AvailableCopies == 0)
+							{
+								<span class="availability unavailable"><i class="fas fa-times-circle"></i> Out of Stock</span>
+							}
+							else
+							{
+								<span class="availability available"><i class="fas fa-check-circle"></i> In Stock</span>
+							}
+						</div>
+					</div>
+				</div>
+			}
+		</div>
+	</div>
 </div>
