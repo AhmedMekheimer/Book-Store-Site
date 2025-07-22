@@ -10,7 +10,7 @@ namespace Online_Book_Store.Models
     public abstract class FileEntity
     {
         public int Id { get; set; }
-        public string Name { get; set; } = null!;
+        public string Name { get; set; } = string.Empty;
         public FileType FileType { get; set; }
     }
 }

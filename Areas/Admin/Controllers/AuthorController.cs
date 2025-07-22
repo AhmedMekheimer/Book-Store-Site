@@ -17,7 +17,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
         [Authorize(Policy = $"{SD.Workers}")]
         public async Task<IActionResult> Index()
         {
-            var Authors = await _authRepo.GetAsync(null, new Expression<Func<Author, object>>[] { a => a.Books });
+            var Authors = await _authRepo.GetAsync(null, new List<Func<IQueryable<Author>, IQueryable<Author>>> { a => a.Include(a => a.Books) });
             return View(Authors);
         }
         [Authorize(Policy = $"{SD.Admins}")]
@@ -39,27 +39,34 @@ namespace Online_Book_Store.Areas.Admin.Controllers
             if (!ModelState.IsValid)
                 return View(author);
 
-            string fileName;
-            FileType fileType;
-            (fileName, fileType) = FileService.UploadNewFile(file);
-
-            AuthorFile authorFile = new()
+            if (file is not null)
             {
-                Name = fileName,
-                FileType = fileType
-            };
-            await _afRepo.CreateAsync(authorFile);
+                string fileName;
+                FileType fileType;
+                (fileName, fileType) = FileService.UploadNewFile(file);
 
-            author.Files.Add(authorFile);
+                AuthorFile authorFile = new()
+                {
+                    Name = fileName,
+                    FileType = fileType
+                };
+                var FileResult = await _afRepo.CreateAsync(authorFile);
+                if (FileResult)
+                    author.Files.Add(authorFile);
+            }
 
-            await _authRepo.CreateAsync(author);
+            var AuthResult = await _authRepo.CreateAsync(author);
+            if (AuthResult)
+                TempData["success-notification"] = "Author Created Successfully";
+            else
+                TempData["error-notification"] = "Author Creation Failure";
 
             return RedirectToAction(nameof(Index));
         }
         [Authorize(Policy = $"{SD.Admins}")]
         public async Task<IActionResult> Edit(int id)
         {
-            var author = await _authRepo.GetOneAsync(a => a.Id == id, new Expression<Func<Author, object>>[] { a => a.Files });
+            var author = await _authRepo.GetOneAsync(a => a.Id == id, new List<Func<IQueryable<Author>, IQueryable<Author>>> { a => a.Include(a => a.Files) });
             if (author is not null)
                 return View(author);
 
@@ -86,7 +93,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
 
             if (file is not null)
             {
-                foreach (var delFile in (await _afRepo.GetAsync(a=>a.AuthorId==author.Id, null, false)))
+                foreach (var delFile in (await _afRepo.GetAsync(a => a.AuthorId == author.Id, null, false)))
                 {
                     // Delete physical file
                     var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\Files", delFile.Name);
@@ -99,6 +106,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                     await _afRepo.DeleteAsync(delFile);
                 }
 
+
                 string fileName;
                 FileType fileType;
                 (fileName, fileType) = FileService.UploadNewFile(file);
@@ -108,18 +116,22 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                     Name = fileName,
                     FileType = fileType
                 };
-                authorFile.AuthorId=author.Id;
+                authorFile.AuthorId = author.Id;
                 await _afRepo.CreateAsync(authorFile);
             }
 
-            await _authRepo.UpdateAsync(author);
+            var UpdateResult=await _authRepo.UpdateAsync(author);
+            if(UpdateResult)
+                TempData["success-notification"] = "Author Updated Successfully";
+            else
+                TempData["error-notification"] = "Author Updating Failure";
 
             return RedirectToAction(nameof(Index));
         }
         [Authorize(Policy = $"{SD.Admins}")]
         public async Task<IActionResult> Delete(int id)
         {
-            if (await (_authRepo.GetOneAsync(a => a.Id == id, new Expression<Func<Author, object>>[] { a => a.Files })) is Author author)
+            if (await (_authRepo.GetOneAsync(a => a.Id == id, new List<Func<IQueryable<Author>, IQueryable<Author>>> { a => a.Include(a => a.Files) })) is Author author)
             {
                 foreach (var file in author.Files)
                 {
@@ -132,7 +144,12 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 }
 
                 // Deleting Author along with his Files in DB
-                await _authRepo.DeleteAsync(author);
+                var DeleteReuslt=await _authRepo.DeleteAsync(author);
+                if(DeleteReuslt)
+                    TempData["success-notification"] = "Author Removed Successfully";
+                else
+                    TempData["error-notification"] = "Author Removal Failure";
+
                 return RedirectToAction(nameof(Index));
             }
             return NotFound();

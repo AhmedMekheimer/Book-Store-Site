@@ -1,0 +1,77 @@
+﻿@using Online_Book_Store.ViewModels.Customer
+@model AuthorSearchVM
+
+@section Scripts {
+	<partial name="_NotificationPartial.cshtml" />
+}
+
+<div class="container">
+	<!-- Books Section -->
+	<div class="Books">
+		<div class="section-header">
+			<h2 class="icon">Featured Authors 👤</h2>
+
+			<div class="search-container">
+				<form method="get" asp-action="Index" asp-controller="Author">
+					<div class="search-combo">
+						@if (Model.Search is not null)
+						{
+							<input value="@Model.Search" type="text" placeholder="Search authors..." asp-for="Search" class="search-input">
+						}
+						else
+						{
+							<input type="text" placeholder="Search authors..." asp-for="Search" class="search-input">
+						}
+						<button type="submit" class="search-button">
+							<i class="fas fa-search"></i>
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<div class="authorsDetails-grid">
+			@foreach (var author in Model.Authors)
+			{
+				<a asp-area="Customer" asp-controller="Author" asp-action="AuthorDetails" asp-route-id="@author.Id">
+					<div class="author-card">
+						<div class="author-portrait">
+							<img src="~/Files/@author.Files.FirstOrDefault(f => f.FileType == FileType.Image)?.Name" alt="@author.Name" class="author-image">
+						</div>
+						<h3 class="author-name">@author.Name</h3>
+					</div>
+				</a>
+			}
+		</div>
+
+	</div>
+
+	<div class="row my-3">
+		<div class="d-flex justify-content-center">
+			<nav aria-label="Page navigation example">
+				<ul class="pagination">
+					@if (Model.PageId > 1)
+					{
+						<li class="page-item">
+							<a class="page-link" asp-area="Customer" asp-controller="Author" asp-action="Index" asp-route-PageId="@(Model.PageId - 1)" asp-route-Search="@Model.Search">Previous</a>
+						</li>
+					}
+					@for (int i = 1; i <= Model.NoPages; i++)
+					{
+						<li class="page-item @(i == Model.PageId ? "active" : "")">
+							<a class="page-link"
+							   asp-area="Customer" asp-controller="Author" asp-action="Index" asp-route-PageId="@i" asp-route-Search="@Model.Search">@i</a>
+						</li>
+					}
+
+					@if (Model.NoPages > Model.PageId)
+					{
+						<li class="page-item">
+							<a class="page-link" asp-area="Customer" asp-controller="Author" asp-action="Index" asp-route-PageId="@(Model.PageId + 1)" asp-route-Search="@Model.Search">Next</a>
+						</li>
+					}
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>

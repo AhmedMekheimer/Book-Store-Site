@@ -17,17 +17,10 @@
 	<!-- Search Section -->
 	<div class="search-container">
 		<div class="search-box">
-			<form asp-area="Admin" asp-controller="User" asp-action="Index">
-				<input value="@(ViewBag.Search ?? "")"
-					   type="text"
-					   id="searchInput"
-					   name="search"
-					   placeholder="Search Users...">
-
-				<button type="submit" class="filter-btn">
-					Search
-				</button>
-			</form>
+			<i class="fas fa-search"></i>
+			<input type="text"
+				   id="searchInput"
+				   placeholder="Search Users...">
 		</div>
 	</div>
 
@@ -115,11 +108,57 @@
 	</div>
 </div>
 
-@section Scripts {
+@section Scripts 
+{
 	<partial name="_NotificationPartial.cshtml" />
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	<script>
-		document.addEventListener('DOMContentLoaded', function() {
+		document.addEventListener('DOMContentLoaded', function() 
+		{
+			// Search functionality
+			const searchInput = document.getElementById('searchInput');
+			if (searchInput) {
+				// Store original rows for resetting search
+				const originalRows = Array.from(document.querySelectorAll('.user-table tbody tr'));
+
+				// Function to perform search
+				function performSearch() {
+					const searchTerm = searchInput.value.trim().toLowerCase();
+
+					// If search is empty, show all rows
+					if (searchTerm === '') {
+						originalRows.forEach(row => row.style.display = '');
+						return;
+					}
+
+					// Search through all rows
+					originalRows.forEach(row => {
+						const name = (row.querySelector('[data-label="Name"]')?.textContent || '').toLowerCase();
+						const username = (row.querySelector('[data-label="Username"]')?.textContent || '').toLowerCase();
+						const email = (row.querySelector('[data-label="Email"]')?.textContent || '').toLowerCase();
+						const roles = (row.querySelector('[data-label="Roles"]')?.textContent || '').toLowerCase();
+
+						// Show row if any field matches the search
+						if (name.includes(searchTerm) ||
+							username.includes(searchTerm) ||
+							email.includes(searchTerm) ||
+							roles.includes(searchTerm)) {
+							row.style.display = '';
+						} else {
+							row.style.display = 'none';
+						}
+					});
+				}
+
+				// Add event listener
+				searchInput.addEventListener('input', performSearch);
+
+				// Perform initial search if there's a value
+				if (searchInput.value) {
+					performSearch();
+				}
+			}
+
 			// Delete buttons with confirmation
 			const deleteButtons = document.querySelectorAll(".btn-delete");
 

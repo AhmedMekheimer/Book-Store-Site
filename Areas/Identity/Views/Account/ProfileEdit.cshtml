@@ -49,5 +49,18 @@
                 </button>
             </div>
         </form>
+
+        <form id="directResetForm"
+              asp-area="Identity"
+              asp-controller="Account"
+              asp-action="ForgetPassword"
+              method="post">
+            <input type="hidden" name="UserNameOrEmail" value="@(Model.Email ?? Model.UserName)" />
+            <div class="form-actions">
+                <button type="submit" class="btn btn-create">
+                    Want to Change Your Password ?
+                </button>
+            </div>
+        </form>
     </div>
 </div>

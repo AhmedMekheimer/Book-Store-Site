@@ -17,7 +17,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
         [Authorize(Policy = $"{SD.Workers}")]
         public async Task<IActionResult> Index()
         {
-            var categories = await _catRepo.GetAsync(null,new Expression<Func<Category, object>>[] {c=>c.Books});
+            var categories = await _catRepo.GetAsync(null, new List<Func<IQueryable<Category>, IQueryable<Category>>> { a => a.Include(c => c.Books) });
             return View(categories);
         }
         [Authorize(Policy = $"{SD.Admins}")]
@@ -60,14 +60,18 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 }
             }
 
-            await _catRepo.CreateAsync(category);
+            var CreateResult=await _catRepo.CreateAsync(category);
+            if (CreateResult)
+                TempData["success-notification"] = "Category Created Successfully";
+            else
+                TempData["error-notification"] = "Category Creation Failure";
 
             return RedirectToAction(nameof(Index));
         }
         [Authorize(Policy = $"{SD.Admins}")]
         public async Task<IActionResult> Edit(int id)
         {
-            var category = await _catRepo.GetOneAsync(c => c.Id == id,new Expression<Func<Category, object>>[] {c => c.Files});
+            var category = await _catRepo.GetOneAsync(c => c.Id == id, new List<Func<IQueryable<Category>, IQueryable<Category>>> { a => a.Include(c => c.Files) });
 
             if (category is not null)
                 return View(category);
@@ -89,7 +93,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
             if (!ModelState.IsValid)
             {
                 Category? category1 = await _catRepo.GetOneAsync(c => c.Id == category.Id,
-                new Expression<Func<Category, object>>[] { c => c.Files }, false);
+                new List<Func<IQueryable<Category>, IQueryable<Category>>> { a => a.Include(c => c.Files) }, false);
 
                 if (category1 is null)
                     return NotFound();
@@ -107,7 +111,8 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 Name=category.Name
             };
 
-            var existingCat = await _catRepo.GetOneAsync(c => c.Id == category.Id, new Expression<Func<Category, object>>[] { c => c.Files });
+            var existingCat = await _catRepo.GetOneAsync(c => c.Id == category.Id, 
+                new List<Func<IQueryable<Category>, IQueryable<Category>>> { a => a.Include(c => c.Files) });
 
             if (existingCat == null) return NotFound();
 
@@ -154,13 +159,19 @@ namespace Online_Book_Store.Areas.Admin.Controllers
             //Cut Connection from Existing
             _catRepo.DetachEntity(existingCat);
 
-            await _catRepo.UpdateAsync(NewCategory);
+            var UpdateResult=await _catRepo.UpdateAsync(NewCategory);
+            if (UpdateResult)
+                TempData["success-notification"] = "Book Updated Successfully";
+            else
+                TempData["error-notification"] = "Book Updating Failure";
+
             return RedirectToAction(nameof(Index));
         }
         [Authorize(Policy = $"{SD.Admins}")]
         public async Task<IActionResult> Delete(int id)
         {
-            if (await(_catRepo.GetOneAsync(c => c.Id == id, new Expression<Func<Category, object>>[] { c => c.Files })) is Category category)
+            if (await(_catRepo.GetOneAsync(c => c.Id == id, 
+                new List<Func<IQueryable<Category>, IQueryable<Category>>> { a => a.Include(c => c.Files) })) is Category category)
             {
                 foreach (var file in category.Files)
                 {
@@ -173,7 +184,12 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 }
 
                 // Delete Book from Db along with its Files
-                await _catRepo.DeleteAsync(category);
+                var DeleteResult=await _catRepo.DeleteAsync(category);
+                if (DeleteResult)
+                    TempData["success-notification"] = "Book Removed Successfully";
+                else
+                    TempData["error-notification"] = "Book Removal Failure";
+
                 return RedirectToAction(nameof(Index));
             }
             return NotFound();

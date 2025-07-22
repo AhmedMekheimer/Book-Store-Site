@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Online_Book_Store.Utility;
 using Online_Book_Store.ViewModels.Admin;
 
@@ -23,7 +25,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
         [Authorize(Policy = $"{SD.Workers}")]
         public async Task<IActionResult> Index()
         {
-            var books = await _bookRepo.GetAsync(null, new Expression<Func<Book, object>>[] { b => b.Authors });
+            var books = await _bookRepo.GetAsync(null, new List<Func<IQueryable<Book>, IQueryable<Book>>> { a => a.Include(a => a.Authors) }, false);
             return View(books);
         }
         [Authorize(Policy = $"{SD.Admins}")]
@@ -124,17 +126,20 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                     book.PublishingHouses.Add(pub);
                 }
             }
-            await _bookRepo.CreateAsync(book);
-
+            var CreateResult=await _bookRepo.CreateAsync(book);
+            if(CreateResult)
+                TempData["success-notification"] = "Book Created Successfully";
+            else
+                TempData["error-notification"] = "Book Creation Failure";
             return RedirectToAction(nameof(Index));
         }
         [Authorize(Policy = $"{SD.Admins}")]
         public async Task<IActionResult> Edit(int id)
         {
-            Book? book = await _bookRepo.GetOneAsync(b => b.Id == id, new Expression<Func<Book, object>>[] {
-            b => b.Authors,
-            b => b.PublishingHouses,
-            b => b.Files
+            Book? book = await _bookRepo.GetOneAsync(b => b.Id == id, new List<Func<IQueryable<Book>, IQueryable<Book>>> {
+            a => a.Include(b => b.Authors),
+            a => a.Include(b => b.PublishingHouses),
+            a => a.Include(b => b.Files)
             });
             if (book is null)
             {
@@ -169,7 +174,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
             if (!ModelState.IsValid)
             {
                 Book? book = await _bookRepo.GetOneAsync(e => e.Id == bookDataVM.Book.Id,
-                new Expression<Func<Book, object>>[] { b => b.Files }, false);
+                new List<Func<IQueryable<Book>, IQueryable<Book>>> { a => a.Include(b => b.Files) }, false);
 
                 if (book is null)
                 {
@@ -208,10 +213,10 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 return View(BookCatAuthPubsVM);
             }
 
-            Book? existingBook = await _bookRepo.GetOneAsync(b => b.Id == bookDataVM.Book.Id, new Expression<Func<Book, object>>[] {
-            b => b.Authors,
-            b => b.PublishingHouses,
-            b => b.Files
+            Book? existingBook = await _bookRepo.GetOneAsync(b => b.Id == bookDataVM.Book.Id, new List<Func<IQueryable<Book>, IQueryable<Book>>> {
+            a => a.Include(b => b.Authors),
+            a => a.Include(b => b.PublishingHouses),
+            a => a.Include(b => b.Files)
             });
 
             if (existingBook == null) return NotFound();
@@ -291,13 +296,18 @@ namespace Online_Book_Store.Areas.Admin.Controllers
             //Remove Connection with Existing Book
             _bookRepo.DetachEntity(existingBook);
 
-            await _bookRepo.UpdateAsync(NewBook);
+            var UpdateResult=await _bookRepo.UpdateAsync(NewBook);
+            if (UpdateResult)
+                TempData["success-notification"] = "Book Updated Successfully";
+            else
+                TempData["error-notification"] = "Book Updating Failure";
+
             return RedirectToAction(nameof(Index));
         }
         [Authorize(Policy = $"{SD.Admins}")]
         public async Task<IActionResult> Delete(int id)
         {
-            if (await (_bookRepo.GetOneAsync(b => b.Id == id, new Expression<Func<Book, object>>[] { b => b.Files })) is Book book)
+            if (await (_bookRepo.GetOneAsync(b => b.Id == id, new List<Func<IQueryable<Book>, IQueryable<Book>>> { a => a.Include(b => b.Files) })) is Book book)
             {
                 foreach (var file in book.Files)
                 {
@@ -310,7 +320,11 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 }
 
                 // Delete Book from Db along with its Files
-                await _bookRepo.DeleteAsync(book);
+                var DeleteResult=await _bookRepo.DeleteAsync(book);
+                if (DeleteResult)
+                    TempData["success-notification"] = "Book Removed Successfully";
+                else
+                    TempData["error-notification"] = "Book Removal Failure";
                 return RedirectToAction(nameof(Index));
             }
             return NotFound();

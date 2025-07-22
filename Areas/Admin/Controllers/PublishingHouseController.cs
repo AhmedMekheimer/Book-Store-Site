@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Online_Book_Store.Utility;
 
 namespace Online_Book_Store.Areas.Admin.Controllers
@@ -17,7 +18,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
         [Authorize(Policy = $"{SD.Workers}")]
         public async Task<IActionResult> Index()
         {
-            var PublishingHouses = await _pubRepo.GetAsync(null, new Expression<Func<PublishingHouse, object>>[] { p => p.Books });
+            var PublishingHouses = await _pubRepo.GetAsync(null, new List<Func<IQueryable<PublishingHouse>, IQueryable<PublishingHouse>>> { a => a.Include(p => p.Books) });
             return View(PublishingHouses);
         }
         [Authorize(Policy = $"{SD.Admins}")]
@@ -61,14 +62,18 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 }
             }
 
-            await _pubRepo.CreateAsync(publishingHouse);
-
+            var CreateResult=await _pubRepo.CreateAsync(publishingHouse);
+            if (CreateResult)
+                TempData["success-notification"] = "Publishing House Created Successfully";
+            else
+                TempData["error-notification"] = "Publishing House Creation Failure";
             return RedirectToAction(nameof(Index));
         }
         [Authorize(Policy = $"{SD.Admins}")]
         public async Task<IActionResult> Edit(int id)
         {
-            var publishingHouse = await _pubRepo.GetOneAsync(p => p.Id == id, new Expression<Func<PublishingHouse, object>>[] { p => p.Files });
+            var publishingHouse = await _pubRepo.GetOneAsync(p => p.Id == id, 
+                new List<Func<IQueryable<PublishingHouse>, IQueryable<PublishingHouse>>> { a => a.Include(p => p.Files) });
 
             if (publishingHouse is not null)
                 return View(publishingHouse);
@@ -90,7 +95,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
             if (!ModelState.IsValid)
             {
                 PublishingHouse? publishingHouse1 = await _pubRepo.GetOneAsync(c => c.Id == publishingHouse.Id,
-                new Expression<Func<PublishingHouse, object>>[] { c => c.Files }, false);
+                new List<Func<IQueryable<PublishingHouse>, IQueryable<PublishingHouse>>> { a => a.Include(c => c.Files) }, false);
 
                 if (publishingHouse1 is null)
                     return NotFound();
@@ -108,7 +113,8 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 Name = publishingHouse.Name
             };
 
-            var existingPub = await _pubRepo.GetOneAsync(c => c.Id == publishingHouse.Id, new Expression<Func<PublishingHouse, object>>[] { c => c.Files });
+            var existingPub = await _pubRepo.GetOneAsync(c => c.Id == publishingHouse.Id, 
+                new List<Func<IQueryable<PublishingHouse>, IQueryable<PublishingHouse>>> { a => a.Include(c => c.Files) });
 
             if (existingPub == null) return NotFound();
 
@@ -155,13 +161,18 @@ namespace Online_Book_Store.Areas.Admin.Controllers
             //Cut Connection from Existing
             _pubRepo.DetachEntity(existingPub);
 
-            await _pubRepo.UpdateAsync(NewPub);
+            var UpdateResult = await _pubRepo.UpdateAsync(NewPub);
+            if (UpdateResult)
+                TempData["success-notification"] = "Publishing House Updated Successfully";
+            else
+                TempData["error-notification"] = "Publishing House Updating Failure";
             return RedirectToAction(nameof(Index));
         }
         [Authorize(Policy = $"{SD.Admins}")]
         public async Task<IActionResult> Delete(int id)
         {
-            if (await(_pubRepo.GetOneAsync(c => c.Id == id, new Expression<Func<PublishingHouse, object>>[] { c => c.Files })) is PublishingHouse publishingHouse)
+            if (await(_pubRepo.GetOneAsync(c => c.Id == id, 
+                new List<Func<IQueryable<PublishingHouse>, IQueryable<PublishingHouse>>> { a => a.Include(c => c.Files) })) is PublishingHouse publishingHouse)
             {
                 foreach (var file in publishingHouse.Files)
                 {
@@ -174,7 +185,11 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 }
 
                 // Delete Book from Db along with its Files
-                await _pubRepo.DeleteAsync(publishingHouse);
+                var DeleteResult=await _pubRepo.DeleteAsync(publishingHouse);
+                if (DeleteResult)
+                    TempData["success-notification"] = "Publishing House Removed Successfully";
+                else
+                    TempData["error-notification"] = "Publishing House Removal Failure";
                 return RedirectToAction(nameof(Index));
             }
             return NotFound();

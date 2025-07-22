@@ -1,5 +1,8 @@
 ﻿@using Online_Book_Store.ViewModels.Customer
 @model BookDetailsVM
+@section Scripts {
+	<partial name="_NotificationPartial.cshtml" />
+}
 
 <div class="book-details-container">
 	<!-- Left Column: Book Cover and Basic Info -->
@@ -37,12 +40,12 @@
 			{
 				foreach (var author in Model.Book.Authors)
 				{
-					<div class="author-item">
-						<i class="fas fa-user-edit"></i>
-						<a asp-area="Customer" asp-controller="Authors" asp-action="AuthorDetails" asp-route-id="@author.Id">
-							<div>@author.Name</div>
-						</a>
-					</div>
+					<a asp-area="Customer" asp-controller="Author" asp-action="AuthorDetails" asp-route-id="@author.Id">
+						<div class="author-item">
+							<i class="fas fa-user-edit"></i>
+								<div>@author.Name</div>
+						</div>
+					</a>
 				}
 			}
 			else
@@ -61,12 +64,12 @@
 			{
 				foreach (var pub in Model.Book.PublishingHouses)
 				{
-					<div class="publisher-item">
-						<i class="fas fa-building"></i>
-						<a asp-area="Customer" asp-controller="Publishers" asp-action="PublisherDetails" asp-route-id="@pub.Id">
+					<a asp-area="Customer" asp-controller="Publishers" asp-action="PublisherDetails" asp-route-id="@pub.Id">
+						<div class="publisher-item">
+							<i class="fas fa-building"></i>
 							<div>@pub.Name</div>
-						</a>
-					</div>
+						</div>
+					</a>
 				}
 			}
 			else

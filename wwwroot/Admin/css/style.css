@@ -16,6 +16,10 @@
     box-sizing: border-box;
 }
 
+/* Smooth scrolling for the whole page */
+html {
+    scroll-behavior: smooth;
+}
 
 body {
     background-color: #f0f2f5;
@@ -182,7 +186,7 @@ header {
 
 main {
     flex: 1;
-    padding: 2rem;
+    padding: 1rem;
 }
 
 /* Users Table Styles */
@@ -287,8 +291,7 @@ main {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
-    padding-bottom: 15px;
+    padding-bottom: 5px;
     border-bottom: 1px solid #e9ecef;
 }
 

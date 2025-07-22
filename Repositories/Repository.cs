@@ -61,7 +61,8 @@
             }
         }
 
-        public async Task<List<T>> GetAsync(Expression<Func<T, bool>>? condition = null, Expression<Func<T, object>>[]? includes = null, bool tracked = true)
+        public async Task<List<T>> GetAsync(Expression<Func<T, bool>>? condition = null, List<Func<IQueryable<T>, IQueryable<T>>>? includes = null
+            , bool tracked = true)
         {
             IQueryable<T> entities = _db;
 
@@ -74,7 +75,7 @@
             {
                 foreach (var item in includes)
                 {
-                    entities = entities.Include(item);
+                    entities = item(entities);
                 }
             }
 
@@ -86,7 +87,7 @@
             return await entities.ToListAsync();
         }
 
-        public async Task<T?> GetOneAsync(Expression<Func<T, bool>>? condition = null, Expression<Func<T, object>>[]? includes = null, bool tracked = true)
+        public async Task<T?> GetOneAsync(Expression<Func<T, bool>>? condition = null, List<Func<IQueryable<T>, IQueryable<T>>>? includes = null, bool tracked = true)
         {
             return (await GetAsync(condition, includes, tracked)).SingleOrDefault();
         }

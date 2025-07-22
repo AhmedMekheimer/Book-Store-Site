@@ -11,10 +11,6 @@
 	<div class="create-form-container">
 		<form asp-action="Create" method="post" enctype="multipart/form-data">
 			<div class="form-group">
-				<input type="hidden" name="id" value="@Model.Id" />
-			</div>
-
-			<div class="form-group">
 				<label for="Name">Author Name</label>
 				<input type="text" id="Name" name="Name" value="@Model.Name" class="form-control" placeholder="Enter author name" required>
 				<span style="color:red" style="color:red" class="text-danger" asp-validation-for="Name"></span>
@@ -23,7 +19,7 @@
 			<!--Images-->
 			<div class="form-group mb-3">
 				<label>Upload Image</label>
-				<input type="file" class="form-control" accept="image/*" id="file" name="file" >
+				<input type="file" class="form-control" accept="image/*" id="file" name="file">
 			</div>
 
 			<div class="form-group">

@@ -78,6 +78,14 @@ namespace Online_Book_Store.Areas.Admin.Controllers
             };
 
             var userCreateResult = await _userManager.CreateAsync(applicationUser, userCreateVM.Password);
+            if (!userCreateResult.Succeeded)
+            {
+                foreach (var item in userCreateResult.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, item.Description);
+                }
+                return View(userCreateVM);
+            }
 
             var userRoles = await _userManager.GetRolesAsync(applicationUser);
 
@@ -85,8 +93,8 @@ namespace Online_Book_Store.Areas.Admin.Controllers
 
             var rolesAddResult = await _userManager.AddToRolesAsync(applicationUser, userCreateVM.Roles);
 
-            // User Created, Roles added Successfully
-            if (userCreateResult.Succeeded && rolesAddResult.Succeeded && rolesRemoveResult.Succeeded)
+            // User Roles added Successfully
+            if (rolesAddResult.Succeeded && rolesRemoveResult.Succeeded)
             {
                 // Success msg
                 TempData["success-notification"] = "User created Successfully";
@@ -172,9 +180,12 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 applicationUser.EmailConfirmed = userEditVM.ConfirmEmail;
 
                 var userEditResult = await _userManager.UpdateAsync(applicationUser);
-                foreach (var item in userEditResult.Errors)
+                if (!userEditResult.Succeeded)
                 {
-                    ModelState.AddModelError(string.Empty, item.Description);
+                    foreach (var item in userEditResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, item.Description);
+                    }
                     return View(userEditVM);
                 }
 
@@ -222,7 +233,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
 
                 var result = await _userManager.DeleteAsync(applicationUser);
                 if (result.Succeeded)
-                { 
+                {
                     TempData["success-notification"] = "User Deleted Successfully";
                     return RedirectToAction("Index", "User", new { area = "Admin" });
                 }
@@ -230,8 +241,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                 TempData["error-notification"] = "User Deletion Error";
                 return RedirectToAction("Index", "User", new { area = "Admin" });
             }
-            TempData["error-notification"] = "User Not Found";
-            return RedirectToAction("Index", "User", new { area = "Admin" });
+            return NotFound();
         }
 
         [Authorize(Policy = $"{SD.Admins}")]
@@ -261,7 +271,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                     applicationUser.LockoutEnd = null;
                     TempData["success-notification"] = "User is UnBlocked Successfully";
                 }
-                var result=await _userManager.UpdateAsync(applicationUser);
+                var result = await _userManager.UpdateAsync(applicationUser);
                 if (result.Succeeded)
                     return RedirectToAction("Index", "User", new { area = "Admin" });
                 else
@@ -270,8 +280,7 @@ namespace Online_Book_Store.Areas.Admin.Controllers
                     return RedirectToAction("Index", "User", new { area = "Admin" });
                 }
             }
-            TempData["error-notification"] = "User Not Found";
-            return RedirectToAction("Index", "User", new { area = "Admin" });
+            return NotFound();
         }
     }
 }

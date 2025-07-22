@@ -19,25 +19,27 @@
 				<input type="text" id="Name" name="Name" class="form-control" placeholder="Enter category name" value="@Model.Name" required>
 				<span style="color:red" style="color:red" class="text-danger" asp-validation-for="Name"></span>
 			</div>
-
-			<!-- Existing Images -->
-			<div class="form-group mb-3">
-				<label>Existing Images</label>
-				<div class="d-flex flex-wrap gap-2" id="existingImagesContainer">
-					@foreach (var file in Model.Files.Where(f => f.FileType == FileType.Image))
-					{
-						<div class="position-relative" id="existingImage_@file.Id">
-							<img src="~/Files/@file.Name" alt="@file.Name" class="img-thumbnail" style="max-height: 150px;">
-							<button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0"
-									onclick="toggleFileDeletion(@file.Id, this)">
-								&times;
-							</button>
-							<!-- Hidden input for existing file ID -->
-							<input type="hidden" name="ExistingFilesIds" value="@file.Id" id="fileInput_@file.Id">
-						</div>
-					}
+			@if (Model.Files.Where(f => f.FileType == FileType.Video).Count() > 0)
+			{
+				<!-- Existing Images -->
+				<div class="form-group mb-3">
+					<label>Existing Images</label>
+					<div class="d-flex flex-wrap gap-2" id="existingImagesContainer">
+						@foreach (var file in Model.Files.Where(f => f.FileType == FileType.Image))
+						{
+							<div class="position-relative" id="existingImage_@file.Id">
+								<img src="~/Files/@file.Name" alt="@file.Name" class="img-thumbnail" style="max-height: 150px;">
+								<button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0"
+										onclick="toggleFileDeletion(@file.Id, this)">
+									&times;
+								</button>
+								<!-- Hidden input for existing file ID -->
+								<input type="hidden" name="ExistingFilesIds" value="@file.Id" id="fileInput_@file.Id">
+							</div>
+						}
+					</div>
 				</div>
-			</div>
+			}
 
 			<!-- New Images -->
 			<div class="form-group mb-3">
@@ -45,6 +47,8 @@
 				<input type="file" class="form-control" accept="image/*" id="files" name="files" multiple onchange="previewImages(event)">
 			</div>
 
+			@if (Model.Files.Where(f => f.FileType == FileType.Video).Count() > 0)
+			{				
 			<!-- Existing Videos -->
 			<div class="form-group mb-3">
 				<label>Existing Videos</label>
@@ -63,6 +67,7 @@
 					}
 				</div>
 			</div>
+			}
 
 			<!--New Videos-->
 			<div class="form-group mb-3">

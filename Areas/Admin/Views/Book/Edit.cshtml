@@ -12,9 +12,7 @@
 	<div class="create-form-container">
 		<form asp-action="Edit" method="post" enctype="multipart/form-data">
 			<div asp-validation-summary="ModelOnly" class="text-danger"></div>
-			<div class="form-group">
-				<input type="hidden" name="Book.id" value="@Model.Book.Id" />
-			</div>
+			<input type="hidden" name="Book.id" value="@Model.Book.Id" />
 
 			<div class="form-group">
 				<label for="Name">Name</label>
@@ -30,25 +28,27 @@
 					   oninput="validity.valid||(value='');">
 				<span style="color:red" class="text-danger" asp-validation-for="Book.Price"></span>
 			</div>
-
-			<!-- Existing Images -->
-			<div class="form-group mb-3">
-				<label>Existing Images</label>
-				<div class="d-flex flex-wrap gap-2" id="existingImagesContainer">
-					@foreach (var file in Model.Book.Files.Where(f => f.FileType == FileType.Image))
-					{
-						<div class="position-relative" id="existingImage_@file.Id">
-							<img src="~/Files/@file.Name" alt="@file.Name" class="img-thumbnail" style="max-height: 150px;">
-							<button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0"
-									onclick="toggleFileDeletion(@file.Id, this)">
-								&times;
-							</button>
-							<!-- Hidden input for existing file ID -->
-							<input type="hidden" name="ExistingFilesIds" value="@file.Id" id="fileInput_@file.Id">
-						</div>
-					}
+			@if (Model.Book.Files.Where(f => f.FileType == FileType.Image).Count() > 0)
+			{
+				<!-- Existing Images -->
+				<div class="form-group mb-3">
+					<label>Existing Images</label>
+					<div class="d-flex flex-wrap gap-2" id="existingImagesContainer">
+						@foreach (var file in Model.Book.Files.Where(f => f.FileType == FileType.Image))
+						{
+							<div class="position-relative" id="existingImage_@file.Id">
+								<img src="~/Files/@file.Name" alt="@file.Name" class="img-thumbnail" style="max-height: 150px;">
+								<button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0"
+										onclick="toggleFileDeletion(@file.Id, this)">
+									&times;
+								</button>
+								<!-- Hidden input for existing file ID -->
+								<input type="hidden" name="ExistingFilesIds" value="@file.Id" id="fileInput_@file.Id">
+							</div>
+						}
+					</div>
 				</div>
-			</div>
+			}
 
 			<!-- New Images -->
 			<div class="form-group mb-3">
@@ -56,24 +56,27 @@
 				<input type="file" class="form-control" accept="image/*" id="files" name="files" multiple onchange="previewImages(event)">
 			</div>
 
-			<!-- Existing Videos -->
-			<div class="form-group mb-3">
-				<label>Existing Videos</label>
-				<div class="d-flex flex-wrap gap-2" id="existingVideosContainer">
-					@foreach (var file in Model.Book.Files.Where(f => f.FileType == FileType.Video))
-					{
-						<div class="position-relative" id="existingVideo_@file.Id">
-							<p>@file.Name</p>
-							<button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0"
-									onclick="toggleFileDeletion(@file.Id, this)">
-								&times;
-							</button>
-							<!-- Hidden input for existing file ID -->
-							<input type="hidden" name="ExistingFilesIds" value="@file.Id" id="fileInput_@file.Id">
-						</div>
-					}
+			@if (Model.Book.Files.Where(f => f.FileType == FileType.Video).Count() > 0)
+			{
+				<!-- Existing Videos -->
+				<div class="form-group mb-3">
+					<label>Existing Videos</label>
+					<div class="d-flex flex-wrap gap-2" id="existingVideosContainer">
+						@foreach (var file in Model.Book.Files.Where(f => f.FileType == FileType.Video))
+						{
+							<div class="position-relative" id="existingVideo_@file.Id">
+								<p>@file.Name</p>
+								<button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0"
+										onclick="toggleFileDeletion(@file.Id, this)">
+									&times;
+								</button>
+								<!-- Hidden input for existing file ID -->
+								<input type="hidden" name="ExistingFilesIds" value="@file.Id" id="fileInput_@file.Id">
+							</div>
+						}
+					</div>
 				</div>
-			</div>
+			}
 
 			<!--New Videos-->
 			<div class="form-group mb-3">
