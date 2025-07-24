@@ -7,7 +7,7 @@
         [MinLength(3)]
         public string Name { get; set; } = null!;
         [MinLength(20)]
-        [MaxLength(5000)]
+        [MaxLength(1000)]
         public string? Description { get; set; }
         [ValidateNever]
         public List<Book> Books { get; set; } = new List<Book>();

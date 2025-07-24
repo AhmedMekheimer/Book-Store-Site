@@ -7,7 +7,7 @@
         [MinLength(3)]
         public string Name { get; set; } = null!;
         [MinLength(20)]
-        [MaxLength(5000)]
+        [MaxLength(1000)]
         public string? Bio { get; set; }
         [ValidateNever]
         public List<string> SocialMedias { get; set; } = new List<string>();

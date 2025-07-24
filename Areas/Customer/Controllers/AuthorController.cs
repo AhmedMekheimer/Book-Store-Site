@@ -22,6 +22,9 @@ namespace Online_Book_Store.Areas.Customer.Controllers
                 },
                 tracked: false);
 
+            if(allAuthors.Count==0)
+                return View(vm);
+
             // Shuffling
             allAuthors = allAuthors.OrderBy(a => a.Books.Count()).ToList();
 

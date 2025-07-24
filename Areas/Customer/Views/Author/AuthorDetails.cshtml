@@ -20,13 +20,24 @@
 		</div>
 
 		<div class="social-links">
-			<a href="@Model.SocialMedias[0]" target="_blank" class="social-link">
-				<i class="fab fa-facebook"></i> Facebook
-			</a>
-			<a href="@Model.SocialMedias[1]" target="_blank" class="social-link">
-				<i class="fab fa-twitter"></i> Twitter
-			</a>
-			@* 			<a href="#" class="social-link">
+			@if (Model.SocialMedias.Count > 0)
+			{
+				@foreach (var link in Model.SocialMedias)
+				{
+					if (link.Contains("facebook"))
+					{
+						<a href="@link" target="_blank" class="social-link">
+							<i class="fab fa-facebook"></i> Facebook
+						</a>
+					}
+					else
+					{
+						<a href="@link" target="_blank" class="social-link">
+							<i class="fab fa-twitter"></i> Twitter
+						</a>
+					}
+				}
+				@* 			<a href="#" class="social-link">
 				<i class="fab fa-instagram"></i> Instagram
 			</a>
 			<a href="#" class="social-link">
@@ -35,6 +46,7 @@
 			<a href="#" class="social-link">
 				<i class="fas fa-globe"></i> Website
 			</a> *@
+			}
 			<!-- Add this in your author details section -->
 			<div class="author-books-link">
 				<a href="#authors-books" class="scroll-link">
@@ -50,38 +62,45 @@
 <div id="authors-books" class="authors-books-section">
 	<h1>Author's Collection</h1>
 	<div class="books-grid">
-		@foreach (var book in Model.Books)
+		@if (Model.Books.Count == 0)
 		{
-			<div class="book-card">
-				<a asp-area="Customer" asp-controller="Home" asp-action="BookDetails" asp-route-id="@book.Id">
-					<div class="book-cover-container">
-						<img src="~/Files/@book.Files.FirstOrDefault(f => f.FileType == FileType.Image)?.Name" alt="Book Image" class="book-cover">
-					</div>
-				</a>
-				<div class="book-details">
-					<h3 class="book-title">
-						<a asp-area="Customer" asp-controller="Home" asp-action="BookDetails" asp-route-id="@book.Id">
-							@book.Name
-						</a>
-					</h3>
-
-					<a class="Category" asp-area="Customer" asp-controller="Category" asp-action="Details" asp-route-id="@book.CategoryId">
-						🏷️ @book.Category.Name
+			<div><h3>Author Has No Contributions Yet</h3></div>
+		}
+		else
+		{
+			@foreach (var book in Model.Books)
+			{
+				<div class="book-card">
+					<a asp-area="Customer" asp-controller="Home" asp-action="BookDetails" asp-route-id="@book.Id">
+						<div class="book-cover-container">
+							<img src="~/Files/@book.Files.FirstOrDefault(f => f.FileType == FileType.Image)?.Name" alt="Book Image" class="book-cover">
+						</div>
 					</a>
+					<div class="book-details">
+						<h3 class="book-title">
+							<a asp-area="Customer" asp-controller="Home" asp-action="BookDetails" asp-route-id="@book.Id">
+								@book.Name
+							</a>
+						</h3>
 
-					<div class="price-row">
-						<span class="price">EGP @book.Price.ToString("F2")</span>
-						@if (book.AvailableCopies == 0)
-						{
-							<span class="availability unavailable"><i class="fas fa-times-circle"></i> Out of Stock</span>
-						}
-						else
-						{
-							<span class="availability available"><i class="fas fa-check-circle"></i> In Stock</span>
-						}
+						<a class="Category" asp-area="Customer" asp-controller="Category" asp-action="Details" asp-route-id="@book.CategoryId">
+							🏷️ @book.Category.Name
+						</a>
+
+						<div class="price-row">
+							<span class="price">EGP @book.Price.ToString("F2")</span>
+							@if (book.AvailableCopies == 0)
+							{
+								<span class="availability unavailable"><i class="fas fa-times-circle"></i> Out of Stock</span>
+							}
+							else
+							{
+								<span class="availability available"><i class="fas fa-check-circle"></i> In Stock</span>
+							}
+						</div>
 					</div>
 				</div>
-			</div>
+			}
 		}
 	</div>
 </div>

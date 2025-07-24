@@ -31,6 +31,14 @@
 		</div>
 
 		<div class="authorsDetails-grid">
+			@if(Model.Authors.Count==0)
+			{
+				<div>
+					<h3>
+						No Authors Were Found
+					</h3>
+				</div>
+			}
 			@foreach (var author in Model.Authors)
 			{
 				<a asp-area="Customer" asp-controller="Author" asp-action="AuthorDetails" asp-route-id="@author.Id">

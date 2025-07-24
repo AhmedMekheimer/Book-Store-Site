@@ -29,7 +29,10 @@ namespace Online_Book_Store.Areas.Customer.Controllers
                 },
                 tracked: false
             );
-
+            if(allBooks.Count==0)
+            {
+                return View(vm);
+            }
             // 2. Shuffle Books
             var shuffled = allBooks.OrderBy(b => b.Name).ToList();
 
