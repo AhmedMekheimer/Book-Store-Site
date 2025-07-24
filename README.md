@@ -24,5 +24,10 @@
 - Repositories in SOLID Principles
 - Authentication & Authorization
   
-# A Video Browsing each Area & Service 
+# System Areas & Services - Video Overviews
+
+| Topic                                  | Video Link                          |
+|----------------------------------------|-------------------------------------|
+| **Introduction**                       | [Watch](https://drive.google.com/file/d/1zubWoTlxTFp8SeebPHTKI23mORBUjK05/view?usp=sharing)  |
+| **A Tour on PolyBook Online Store**    | [Watch](https://drive.google.com/file/d/124sPgjj_RAtAqagCygWJqRvylcHL9rE7/view?usp=sharing)  |
 
