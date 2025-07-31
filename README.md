@@ -19,7 +19,6 @@
 # Provided Services
 - Db Context
 - Identity User , Identity Role
-- Db Initializer
 - Email Sender
 - Repositories in SOLID Principles
 - Authentication & Authorization
