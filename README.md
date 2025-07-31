@@ -29,5 +29,5 @@
 | Topic                                  | Video Link                          |
 |----------------------------------------|-------------------------------------|
 | **Introduction**                       | [Watch](https://drive.google.com/file/d/1zubWoTlxTFp8SeebPHTKI23mORBUjK05/view?usp=sharing)  |
-| **A Tour on PolyBook Online Store**    | [Watch](https://drive.google.com/file/d/124sPgjj_RAtAqagCygWJqRvylcHL9rE7/view?usp=sharing)  |
+| **A Tour on PolyBook Store**           | [Watch](https://drive.google.com/file/d/124sPgjj_RAtAqagCygWJqRvylcHL9rE7/view?usp=sharing)  |
 
